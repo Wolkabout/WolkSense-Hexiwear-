@@ -1,8 +1,15 @@
 Hexiwear iOS
 
-To setup environment please run:
 
-pod install
+
+To setup environment you need CocoaPods installed on your computer.
+You can install it with the following command:
+
+$ gem install cocoapods
+
+after that, run
+
+$ pod install
 
 this will install necessary dependencies and generate XCode workspace.
 
