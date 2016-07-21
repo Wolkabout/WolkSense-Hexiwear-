@@ -15,3 +15,8 @@ Hexiwear TARGET 'Build Settings'
 
 - Search Paths -> Always Search User Paths is Yes
 - Search Paths -> User Header Search Paths is Pods/**
+
+
+LICENSE
+
+This software is released under the GNU General Public License version 3. See LICENSE for details.
