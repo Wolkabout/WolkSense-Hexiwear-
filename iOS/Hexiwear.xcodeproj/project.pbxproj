@@ -1,0 +1,522 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B3AB921D1D40B9C600368526 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB921C1D40B9C600368526 /* AppDelegate.swift */; };
+		B3AB92221D40B9C600368526 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3AB92201D40B9C600368526 /* Main.storyboard */; };
+		B3AB92241D40B9C600368526 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3AB92231D40B9C600368526 /* Assets.xcassets */; };
+		B3AB92E51D40BAD700368526 /* AcceleratorTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92E11D40BAD700368526 /* AcceleratorTableViewCell.swift */; };
+		B3AB92E61D40BAD700368526 /* GyroTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92E21D40BAD700368526 /* GyroTableViewCell.swift */; };
+		B3AB92E71D40BAD700368526 /* HexiwearTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92E31D40BAD700368526 /* HexiwearTableViewCell.swift */; };
+		B3AB92E81D40BAD700368526 /* WeatherTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92E41D40BAD700368526 /* WeatherTableViewCell.swift */; };
+		B3AB92F11D40BB1000368526 /* Account.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92EB1D40BB1000368526 /* Account.swift */; };
+		B3AB92F21D40BB1000368526 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92EC1D40BB1000368526 /* Device.swift */; };
+		B3AB92F31D40BB1000368526 /* Feed.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92ED1D40BB1000368526 /* Feed.swift */; };
+		B3AB92F41D40BB1000368526 /* Hexiwear.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92EE1D40BB1000368526 /* Hexiwear.swift */; };
+		B3AB92F51D40BB1000368526 /* TrackingDevice.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92EF1D40BB1000368526 /* TrackingDevice.swift */; };
+		B3AB92F61D40BB1000368526 /* UserCredentials.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92F01D40BB1000368526 /* UserCredentials.swift */; };
+		B3AB92FB1D40BB3F00368526 /* FirmwareSelectionTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92F91D40BB3F00368526 /* FirmwareSelectionTableViewController.swift */; };
+		B3AB92FC1D40BB3F00368526 /* FWUpgradeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92FA1D40BB3F00368526 /* FWUpgradeViewController.swift */; };
+		B3AB93001D40BB5B00368526 /* ChangePasswordTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92FE1D40BB5B00368526 /* ChangePasswordTableViewController.swift */; };
+		B3AB93011D40BB5B00368526 /* SettingsTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB92FF1D40BB5B00368526 /* SettingsTableViewController.swift */; };
+		B3AB93041D40BB8100368526 /* HexiwearTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93031D40BB8100368526 /* HexiwearTableViewController.swift */; };
+		B3AB93091D40BBAE00368526 /* ActivateDeviceViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93061D40BBAE00368526 /* ActivateDeviceViewController.swift */; };
+		B3AB930A1D40BBAE00368526 /* DetectHexiwearTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93071D40BBAE00368526 /* DetectHexiwearTableViewController.swift */; };
+		B3AB930B1D40BBAE00368526 /* ShowDevicesTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93081D40BBAE00368526 /* ShowDevicesTableViewController.swift */; };
+		B3AB930D1D40BBC300368526 /* BaseNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB930C1D40BBC300368526 /* BaseNavigationController.swift */; };
+		B3AB93131D40BBE100368526 /* CreateAccountTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB930F1D40BBE100368526 /* CreateAccountTableViewController.swift */; };
+		B3AB93141D40BBE100368526 /* ForgotPasswordViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93101D40BBE100368526 /* ForgotPasswordViewController.swift */; };
+		B3AB93151D40BBE100368526 /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93111D40BBE100368526 /* LoginViewController.swift */; };
+		B3AB93161D40BBE100368526 /* StaticViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93121D40BBE100368526 /* StaticViewController.swift */; };
+		B3AB931B1D40BC2800368526 /* DataStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93181D40BC2800368526 /* DataStore.swift */; };
+		B3AB931C1D40BC2800368526 /* MQTTAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93191D40BC2800368526 /* MQTTAPI.swift */; };
+		B3AB931D1D40BC2800368526 /* WebAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB931A1D40BC2800368526 /* WebAPI.swift */; };
+		B3AB93221D40BC4600368526 /* HEXIWEAR_KW40_factory_settings.img in Resources */ = {isa = PBXBuildFile; fileRef = B3AB931F1D40BC4600368526 /* HEXIWEAR_KW40_factory_settings.img */; };
+		B3AB93231D40BC4600368526 /* HEXIWEAR_MK64_factory_settings.img in Resources */ = {isa = PBXBuildFile; fileRef = B3AB93201D40BC4600368526 /* HEXIWEAR_MK64_factory_settings.img */; };
+		B3AB93241D40BC4600368526 /* Util.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93211D40BC4600368526 /* Util.swift */; };
+		B3AB93301D40BC5000368526 /* ca.cer in Resources */ = {isa = PBXBuildFile; fileRef = B3AB93261D40BC5000368526 /* ca.cer */; };
+		B3AB93311D40BC5000368526 /* CocoaMQTT.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93281D40BC5000368526 /* CocoaMQTT.swift */; };
+		B3AB93321D40BC5000368526 /* CocoaMQTTFrame.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB93291D40BC5000368526 /* CocoaMQTTFrame.swift */; };
+		B3AB93331D40BC5000368526 /* CocoaMQTTMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB932A1D40BC5000368526 /* CocoaMQTTMessage.swift */; };
+		B3AB93341D40BC5000368526 /* GCDAsyncSocket.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AB932C1D40BC5000368526 /* GCDAsyncSocket.m */; };
+		B3AB93351D40BC5000368526 /* LICENSE in Resources */ = {isa = PBXBuildFile; fileRef = B3AB932D1D40BC5000368526 /* LICENSE */; };
+		B3AB93361D40BC5000368526 /* MSWeakTimer.m in Sources */ = {isa = PBXBuildFile; fileRef = B3AB932F1D40BC5000368526 /* MSWeakTimer.m */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B3AB92191D40B9C600368526 /* Hexiwear.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hexiwear.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		B3AB921C1D40B9C600368526 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		B3AB92211D40B9C600368526 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		B3AB92231D40B9C600368526 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		B3AB92281D40B9C600368526 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B3AB92E11D40BAD700368526 /* AcceleratorTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AcceleratorTableViewCell.swift; sourceTree = "<group>"; };
+		B3AB92E21D40BAD700368526 /* GyroTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GyroTableViewCell.swift; sourceTree = "<group>"; };
+		B3AB92E31D40BAD700368526 /* HexiwearTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HexiwearTableViewCell.swift; sourceTree = "<group>"; };
+		B3AB92E41D40BAD700368526 /* WeatherTableViewCell.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WeatherTableViewCell.swift; sourceTree = "<group>"; };
+		B3AB92EB1D40BB1000368526 /* Account.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Account.swift; sourceTree = "<group>"; };
+		B3AB92EC1D40BB1000368526 /* Device.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
+		B3AB92ED1D40BB1000368526 /* Feed.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Feed.swift; sourceTree = "<group>"; };
+		B3AB92EE1D40BB1000368526 /* Hexiwear.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Hexiwear.swift; sourceTree = "<group>"; };
+		B3AB92EF1D40BB1000368526 /* TrackingDevice.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = TrackingDevice.swift; sourceTree = "<group>"; };
+		B3AB92F01D40BB1000368526 /* UserCredentials.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UserCredentials.swift; sourceTree = "<group>"; };
+		B3AB92F91D40BB3F00368526 /* FirmwareSelectionTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirmwareSelectionTableViewController.swift; sourceTree = "<group>"; };
+		B3AB92FA1D40BB3F00368526 /* FWUpgradeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FWUpgradeViewController.swift; sourceTree = "<group>"; };
+		B3AB92FE1D40BB5B00368526 /* ChangePasswordTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChangePasswordTableViewController.swift; sourceTree = "<group>"; };
+		B3AB92FF1D40BB5B00368526 /* SettingsTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SettingsTableViewController.swift; sourceTree = "<group>"; };
+		B3AB93031D40BB8100368526 /* HexiwearTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HexiwearTableViewController.swift; sourceTree = "<group>"; };
+		B3AB93061D40BBAE00368526 /* ActivateDeviceViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ActivateDeviceViewController.swift; sourceTree = "<group>"; };
+		B3AB93071D40BBAE00368526 /* DetectHexiwearTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DetectHexiwearTableViewController.swift; sourceTree = "<group>"; };
+		B3AB93081D40BBAE00368526 /* ShowDevicesTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShowDevicesTableViewController.swift; sourceTree = "<group>"; };
+		B3AB930C1D40BBC300368526 /* BaseNavigationController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = BaseNavigationController.swift; sourceTree = "<group>"; };
+		B3AB930F1D40BBE100368526 /* CreateAccountTableViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CreateAccountTableViewController.swift; sourceTree = "<group>"; };
+		B3AB93101D40BBE100368526 /* ForgotPasswordViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ForgotPasswordViewController.swift; sourceTree = "<group>"; };
+		B3AB93111D40BBE100368526 /* LoginViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LoginViewController.swift; sourceTree = "<group>"; };
+		B3AB93121D40BBE100368526 /* StaticViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StaticViewController.swift; sourceTree = "<group>"; };
+		B3AB93181D40BC2800368526 /* DataStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DataStore.swift; sourceTree = "<group>"; };
+		B3AB93191D40BC2800368526 /* MQTTAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MQTTAPI.swift; sourceTree = "<group>"; };
+		B3AB931A1D40BC2800368526 /* WebAPI.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WebAPI.swift; sourceTree = "<group>"; };
+		B3AB931F1D40BC4600368526 /* HEXIWEAR_KW40_factory_settings.img */ = {isa = PBXFileReference; lastKnownFileType = file; path = HEXIWEAR_KW40_factory_settings.img; sourceTree = "<group>"; };
+		B3AB93201D40BC4600368526 /* HEXIWEAR_MK64_factory_settings.img */ = {isa = PBXFileReference; lastKnownFileType = file; path = HEXIWEAR_MK64_factory_settings.img; sourceTree = "<group>"; };
+		B3AB93211D40BC4600368526 /* Util.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Util.swift; sourceTree = "<group>"; };
+		B3AB93261D40BC5000368526 /* ca.cer */ = {isa = PBXFileReference; lastKnownFileType = file; path = ca.cer; sourceTree = "<group>"; };
+		B3AB93271D40BC5000368526 /* CocoaMQTT.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CocoaMQTT.h; sourceTree = "<group>"; };
+		B3AB93281D40BC5000368526 /* CocoaMQTT.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CocoaMQTT.swift; sourceTree = "<group>"; };
+		B3AB93291D40BC5000368526 /* CocoaMQTTFrame.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CocoaMQTTFrame.swift; sourceTree = "<group>"; };
+		B3AB932A1D40BC5000368526 /* CocoaMQTTMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CocoaMQTTMessage.swift; sourceTree = "<group>"; };
+		B3AB932B1D40BC5000368526 /* GCDAsyncSocket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GCDAsyncSocket.h; sourceTree = "<group>"; };
+		B3AB932C1D40BC5000368526 /* GCDAsyncSocket.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = GCDAsyncSocket.m; sourceTree = "<group>"; };
+		B3AB932D1D40BC5000368526 /* LICENSE */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
+		B3AB932E1D40BC5000368526 /* MSWeakTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSWeakTimer.h; sourceTree = "<group>"; };
+		B3AB932F1D40BC5000368526 /* MSWeakTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSWeakTimer.m; sourceTree = "<group>"; };
+		B3AB93371D40BC7500368526 /* Hexiwear-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Hexiwear-Bridging-Header.h"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B3AB92161D40B9C600368526 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B3AB92101D40B9C600368526 = {
+			isa = PBXGroup;
+			children = (
+				B3AB921B1D40B9C600368526 /* Hexiwear */,
+				B3AB921A1D40B9C600368526 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B3AB921A1D40B9C600368526 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB92191D40B9C600368526 /* Hexiwear.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B3AB921B1D40B9C600368526 /* Hexiwear */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB93371D40BC7500368526 /* Hexiwear-Bridging-Header.h */,
+				B3AB921C1D40B9C600368526 /* AppDelegate.swift */,
+				B3AB92EA1D40BAEE00368526 /* Model */,
+				B3AB92E01D40BAAD00368526 /* View */,
+				B3AB92F71D40BB2600368526 /* Controller */,
+				B3AB93171D40BC0E00368526 /* Service */,
+				B3AB931E1D40BC3300368526 /* Util */,
+				B3AB93251D40BC5000368526 /* CocoaMQTT */,
+				B3AB92201D40B9C600368526 /* Main.storyboard */,
+				B3AB92231D40B9C600368526 /* Assets.xcassets */,
+				B3AB92281D40B9C600368526 /* Info.plist */,
+			);
+			path = Hexiwear;
+			sourceTree = "<group>";
+		};
+		B3AB92E01D40BAAD00368526 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB92E11D40BAD700368526 /* AcceleratorTableViewCell.swift */,
+				B3AB92E21D40BAD700368526 /* GyroTableViewCell.swift */,
+				B3AB92E31D40BAD700368526 /* HexiwearTableViewCell.swift */,
+				B3AB92E41D40BAD700368526 /* WeatherTableViewCell.swift */,
+			);
+			name = View;
+			sourceTree = "<group>";
+		};
+		B3AB92EA1D40BAEE00368526 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB92EB1D40BB1000368526 /* Account.swift */,
+				B3AB92EC1D40BB1000368526 /* Device.swift */,
+				B3AB92ED1D40BB1000368526 /* Feed.swift */,
+				B3AB92EE1D40BB1000368526 /* Hexiwear.swift */,
+				B3AB92EF1D40BB1000368526 /* TrackingDevice.swift */,
+				B3AB92F01D40BB1000368526 /* UserCredentials.swift */,
+			);
+			name = Model;
+			sourceTree = "<group>";
+		};
+		B3AB92F71D40BB2600368526 /* Controller */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB930C1D40BBC300368526 /* BaseNavigationController.swift */,
+				B3AB930E1D40BBCA00368526 /* Login */,
+				B3AB93051D40BB9000368526 /* Detect Hexiwear */,
+				B3AB93021D40BB6A00368526 /* Hexiwear */,
+				B3AB92FD1D40BB4400368526 /* Settings */,
+				B3AB92F81D40BB2E00368526 /* OTAP */,
+			);
+			name = Controller;
+			sourceTree = "<group>";
+		};
+		B3AB92F81D40BB2E00368526 /* OTAP */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB92F91D40BB3F00368526 /* FirmwareSelectionTableViewController.swift */,
+				B3AB92FA1D40BB3F00368526 /* FWUpgradeViewController.swift */,
+			);
+			name = OTAP;
+			sourceTree = "<group>";
+		};
+		B3AB92FD1D40BB4400368526 /* Settings */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB92FE1D40BB5B00368526 /* ChangePasswordTableViewController.swift */,
+				B3AB92FF1D40BB5B00368526 /* SettingsTableViewController.swift */,
+			);
+			name = Settings;
+			sourceTree = "<group>";
+		};
+		B3AB93021D40BB6A00368526 /* Hexiwear */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB93031D40BB8100368526 /* HexiwearTableViewController.swift */,
+			);
+			name = Hexiwear;
+			sourceTree = "<group>";
+		};
+		B3AB93051D40BB9000368526 /* Detect Hexiwear */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB93061D40BBAE00368526 /* ActivateDeviceViewController.swift */,
+				B3AB93071D40BBAE00368526 /* DetectHexiwearTableViewController.swift */,
+				B3AB93081D40BBAE00368526 /* ShowDevicesTableViewController.swift */,
+			);
+			name = "Detect Hexiwear";
+			sourceTree = "<group>";
+		};
+		B3AB930E1D40BBCA00368526 /* Login */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB930F1D40BBE100368526 /* CreateAccountTableViewController.swift */,
+				B3AB93101D40BBE100368526 /* ForgotPasswordViewController.swift */,
+				B3AB93111D40BBE100368526 /* LoginViewController.swift */,
+				B3AB93121D40BBE100368526 /* StaticViewController.swift */,
+			);
+			name = Login;
+			sourceTree = "<group>";
+		};
+		B3AB93171D40BC0E00368526 /* Service */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB93181D40BC2800368526 /* DataStore.swift */,
+				B3AB93191D40BC2800368526 /* MQTTAPI.swift */,
+				B3AB931A1D40BC2800368526 /* WebAPI.swift */,
+			);
+			name = Service;
+			sourceTree = "<group>";
+		};
+		B3AB931E1D40BC3300368526 /* Util */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB931F1D40BC4600368526 /* HEXIWEAR_KW40_factory_settings.img */,
+				B3AB93201D40BC4600368526 /* HEXIWEAR_MK64_factory_settings.img */,
+				B3AB93211D40BC4600368526 /* Util.swift */,
+			);
+			name = Util;
+			sourceTree = "<group>";
+		};
+		B3AB93251D40BC5000368526 /* CocoaMQTT */ = {
+			isa = PBXGroup;
+			children = (
+				B3AB93261D40BC5000368526 /* ca.cer */,
+				B3AB93271D40BC5000368526 /* CocoaMQTT.h */,
+				B3AB93281D40BC5000368526 /* CocoaMQTT.swift */,
+				B3AB93291D40BC5000368526 /* CocoaMQTTFrame.swift */,
+				B3AB932A1D40BC5000368526 /* CocoaMQTTMessage.swift */,
+				B3AB932B1D40BC5000368526 /* GCDAsyncSocket.h */,
+				B3AB932C1D40BC5000368526 /* GCDAsyncSocket.m */,
+				B3AB932D1D40BC5000368526 /* LICENSE */,
+				B3AB932E1D40BC5000368526 /* MSWeakTimer.h */,
+				B3AB932F1D40BC5000368526 /* MSWeakTimer.m */,
+			);
+			path = CocoaMQTT;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B3AB92181D40B9C600368526 /* Hexiwear */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B3AB922B1D40B9C600368526 /* Build configuration list for PBXNativeTarget "Hexiwear" */;
+			buildPhases = (
+				B3AB92151D40B9C600368526 /* Sources */,
+				B3AB92161D40B9C600368526 /* Frameworks */,
+				B3AB92171D40B9C600368526 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Hexiwear;
+			productName = Hexiwear;
+			productReference = B3AB92191D40B9C600368526 /* Hexiwear.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B3AB92111D40B9C600368526 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 0730;
+				LastUpgradeCheck = 0730;
+				ORGANIZATIONNAME = WolkAbout;
+				TargetAttributes = {
+					B3AB92181D40B9C600368526 = {
+						CreatedOnToolsVersion = 7.3.1;
+					};
+				};
+			};
+			buildConfigurationList = B3AB92141D40B9C600368526 /* Build configuration list for PBXProject "Hexiwear" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = B3AB92101D40B9C600368526;
+			productRefGroup = B3AB921A1D40B9C600368526 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B3AB92181D40B9C600368526 /* Hexiwear */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B3AB92171D40B9C600368526 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B3AB93351D40BC5000368526 /* LICENSE in Resources */,
+				B3AB93301D40BC5000368526 /* ca.cer in Resources */,
+				B3AB92241D40B9C600368526 /* Assets.xcassets in Resources */,
+				B3AB93221D40BC4600368526 /* HEXIWEAR_KW40_factory_settings.img in Resources */,
+				B3AB93231D40BC4600368526 /* HEXIWEAR_MK64_factory_settings.img in Resources */,
+				B3AB92221D40B9C600368526 /* Main.storyboard in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B3AB92151D40B9C600368526 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B3AB93341D40BC5000368526 /* GCDAsyncSocket.m in Sources */,
+				B3AB93041D40BB8100368526 /* HexiwearTableViewController.swift in Sources */,
+				B3AB93331D40BC5000368526 /* CocoaMQTTMessage.swift in Sources */,
+				B3AB92E81D40BAD700368526 /* WeatherTableViewCell.swift in Sources */,
+				B3AB93141D40BBE100368526 /* ForgotPasswordViewController.swift in Sources */,
+				B3AB93151D40BBE100368526 /* LoginViewController.swift in Sources */,
+				B3AB93161D40BBE100368526 /* StaticViewController.swift in Sources */,
+				B3AB92F61D40BB1000368526 /* UserCredentials.swift in Sources */,
+				B3AB93131D40BBE100368526 /* CreateAccountTableViewController.swift in Sources */,
+				B3AB93091D40BBAE00368526 /* ActivateDeviceViewController.swift in Sources */,
+				B3AB92F31D40BB1000368526 /* Feed.swift in Sources */,
+				B3AB930B1D40BBAE00368526 /* ShowDevicesTableViewController.swift in Sources */,
+				B3AB92FB1D40BB3F00368526 /* FirmwareSelectionTableViewController.swift in Sources */,
+				B3AB93241D40BC4600368526 /* Util.swift in Sources */,
+				B3AB92F51D40BB1000368526 /* TrackingDevice.swift in Sources */,
+				B3AB93311D40BC5000368526 /* CocoaMQTT.swift in Sources */,
+				B3AB930D1D40BBC300368526 /* BaseNavigationController.swift in Sources */,
+				B3AB931B1D40BC2800368526 /* DataStore.swift in Sources */,
+				B3AB921D1D40B9C600368526 /* AppDelegate.swift in Sources */,
+				B3AB93001D40BB5B00368526 /* ChangePasswordTableViewController.swift in Sources */,
+				B3AB930A1D40BBAE00368526 /* DetectHexiwearTableViewController.swift in Sources */,
+				B3AB92E61D40BAD700368526 /* GyroTableViewCell.swift in Sources */,
+				B3AB92E71D40BAD700368526 /* HexiwearTableViewCell.swift in Sources */,
+				B3AB92E51D40BAD700368526 /* AcceleratorTableViewCell.swift in Sources */,
+				B3AB931C1D40BC2800368526 /* MQTTAPI.swift in Sources */,
+				B3AB92FC1D40BB3F00368526 /* FWUpgradeViewController.swift in Sources */,
+				B3AB931D1D40BC2800368526 /* WebAPI.swift in Sources */,
+				B3AB93011D40BB5B00368526 /* SettingsTableViewController.swift in Sources */,
+				B3AB93361D40BC5000368526 /* MSWeakTimer.m in Sources */,
+				B3AB92F41D40BB1000368526 /* Hexiwear.swift in Sources */,
+				B3AB92F21D40BB1000368526 /* Device.swift in Sources */,
+				B3AB92F11D40BB1000368526 /* Account.swift in Sources */,
+				B3AB93321D40BC5000368526 /* CocoaMQTTFrame.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		B3AB92201D40B9C600368526 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				B3AB92211D40B9C600368526 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		B3AB92291D40B9C600368526 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "Hexiwear/Hexiwear-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		B3AB922A1D40B9C600368526 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 9.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				SWIFT_OBJC_BRIDGING_HEADER = "Hexiwear/Hexiwear-Bridging-Header.h";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		B3AB922C1D40B9C600368526 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = Hexiwear/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.wolkabout.Hexiwear;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		B3AB922D1D40B9C600368526 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = Hexiwear/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.wolkabout.Hexiwear;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B3AB92141D40B9C600368526 /* Build configuration list for PBXProject "Hexiwear" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B3AB92291D40B9C600368526 /* Debug */,
+				B3AB922A1D40B9C600368526 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B3AB922B1D40B9C600368526 /* Build configuration list for PBXNativeTarget "Hexiwear" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B3AB922C1D40B9C600368526 /* Debug */,
+				B3AB922D1D40B9C600368526 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B3AB92111D40B9C600368526 /* Project object */;
+}
