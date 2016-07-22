@@ -1,5 +1,5 @@
 # WolkSense-Hexiwear-
-Applications for iOS and Android which pair with Hexiwear BLE devices and send sensor readings to WolkSense sensor data cloud 
+Applications for iOS and Android which pair with Hexiwear BLE devices and send sensor readings to [WolkSense sensor data cloud](https://wolksense.com) 
 
 LICENSE
 -------
