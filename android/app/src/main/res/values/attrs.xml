@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="Input">
+        <attr name="drawable" format="integer"/>
+        <attr name="hint" format="string"/>
+        <attr name="maxLength" format="integer"/>
+        <attr name="actionLabel" format="string"/>
+        <attr name="text" format="string"/>
+        <attr name="textColor" format="color"/>
+        <attr name="type" format="enum">
+            <enum name="name" value="0"/>
+            <enum name="text" value="1"/>
+            <enum name="email" value="2"/>
+            <enum name="password" value="3"/>
+            <enum name="number" value="4"/>
+        </attr>
+    </declare-styleable>
+    <declare-styleable name="Reading">
+        <attr name="image" format="integer"/>
+        <attr name="readingType" format="enum">
+            <enum name="acceleration" value="0"/>
+            <enum name="gyro" value="1"/>
+            <enum name="magnet" value="2"/>
+            <enum name="light" value="3"/>
+            <enum name="temperature" value="4"/>
+            <enum name="humidity" value="5"/>
+            <enum name="pressure" value="6"/>
+            <enum name="battery" value="7"/>
+            <enum name="heartrate" value="8"/>
+            <enum name="steps" value="9"/>
+            <enum name="calories" value="10"/>
+        </attr>
+    </declare-styleable>
+    <declare-styleable name="SingleReading" parent="Reading"/>
+    <declare-styleable name="TripleReading" parent="Reading"/>
+</resources>

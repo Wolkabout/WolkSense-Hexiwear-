@@ -1,0 +1,126 @@
+<resources>
+
+    <!--GENERAL-->
+    <string name="app_name">Hexiwear</string>
+    <string name="yes">yes</string>
+    <string name="no">no</string>
+    <string name="ok">OK</string>
+    <string name="dismiss">dismiss</string>
+    <string name="cancel">Cancel</string>
+    <string name="empty" />
+
+    <!--LOGIN-->
+    <string name="login_activity_title">LoginActivity</string>
+    <string name="login_email_hint">email</string>
+    <string name="login_password_hint">password</string>
+    <string name="login_sign_in">Sign in</string>
+    <string name="login_forgot_password">Forgot password?</string>
+    <string name="login_registration">Sign up</string>
+    <string name="login_register_hint">Don\'t have an account yet?</string>
+    <string name="login_signing_in">Signing In</string>
+    <string name="login_error_invalid_credentials">Provided email/password combination is not recognized.</string>
+
+    <!--REGISTRATION-->
+    <string name="registration_email_hint">email</string>
+    <string name="registration_password_hint">password</string>
+    <string name="registration_first_name">First Name</string>
+    <string name="registration_last_name">Last Name</string>
+    <string name="registration_error_field_required">This field is required.</string>
+    <string name="registration_error_invalid_password">Password must have 8 or more characters.</string>
+    <string name="registration_error_invalid_email">Input is not a valid email.</string>
+    <string name="registration_activity_title">Registration</string>
+    <string name="registration_success">Thank you for signing up. You will receive an email from us with further instructions how to access your account.</string>
+    <string name="registration_error_all_fields_required">Please fill in all the registration fields.</string>
+    <string name="registration_failed">The registration was not successful. Please try again.</string>
+    <string name="registration_accept_terms">In order to proceed, you need to accept the Terms and conditions.</string>
+    <string name="registration_terms_and_conditions">I agree with <a href="https://wolksense.com/documents/privacypolicy.html">privacy policy</a> and <a href="https://wolksense.com/documents/termsofservice.html">Terms &amp; Conditions</a></string>
+
+    <!--MAIN ACTIVITY-->
+    <string name="discovery_available_devices">Available devices</string>
+    <string name="discovery_scanning">Scanning…</string>
+    <string name="discovery_bonding">Bonding device. Please wait…</string>
+    <string name="discovery_otap">OTAP</string>
+    <string name="discovery_bonded">(Bonded)</string>
+    <string name="discovery_change_password">Change password</string>
+    <string name="discovery_sign_out">Sign out</string>
+
+    <!--ACTIVATION DIALOG-->
+    <string name="activation_dialog_title">Activate this Hexiwear as:</string>
+    <string name="activation_dialog_default_name">My Hexiwear</string>
+    <string name="activation_dialog_new_device">New device</string>
+    <string name="activation_dialog_name_hint">Device Name</string>
+    <string name="activation_dialog_confirm">Activate</string>
+
+    <!--READINGS ACTIVITY-->
+    <string name="readings_activity_title">Readings</string>
+    <string name="readings_connection_reconnecting">Reconnecting</string>
+    <string name="readings_connection_connected">Reading services</string>
+    <string name="readings_stand_by">Stand by…</string>
+    <string name="readings_idle_mode">Please turn on fitness app or SensorTag mode to display data.</string>
+    <string name="readings_option_settings">Settings</string>
+    <string name="readings_option_set_clock">Set Clock</string>
+    <string name="readings_option_toggle_tracking">Toggle tracking</string>
+    <string name="readings_option_firmware_update">Firmware update</string>
+
+    <!--SETTINGS-->
+    <string name="preferences_activity_title">Settings</string>
+    <string name="preferences_manufacturer_info">manufacturerInfo</string>
+    <string name="preferences_hw_version">hwVersion</string>
+    <string name="preferences_fw_version">fwVersion</string>
+    <string name="preferences_battery">Battery</string>
+    <string name="preferences_temperature">Temperature</string>
+    <string name="preferences_pressure">Pressure</string>
+    <string name="preferences_heartrate">Heartrate</string>
+    <string name="preferences_humidity">Humidity</string>
+    <string name="preferences_light">Light</string>
+    <string name="preferences_steps">Steps</string>
+    <string name="preferences_acceleration">Acceleration</string>
+    <string name="preferences_magnet">Magnet</string>
+    <string name="preferences_gyro">Gyro</string>
+    <string name="preferences_calories">Calories</string>
+    <string name="preferences_publish_interval_key">publishInterval</string>
+    <string name="preferences_publish_interval_value">Every %s seconds</string>
+    <string name="preferences_keep_alive_key">keepAlive</string>
+    <string name="preferences_keep_alive">Continue in background</string>
+    <string name="preferences_publish_key">publishToCloud</string>
+    <string name="preferences_publish">Publish to cloud</string>
+    <string name="preferences_keep_alive_summary">App will maintain connection to hexiwear when closed.</string>
+
+    <!--FIRMWARE UPDATE-->
+    <string name="firmware_update_activity_title">Firmware update</string>
+    <string name="firmware_update_version">Version: %s</string>
+    <string name="firmware_update_type">Type: %s</string>
+    <string name="firmware_update_complete">Firmware successfully updated.</string>
+    <string name="firmware_update_error">Error. Firmware not updated.</string>
+    <string name="firmware_update_start">Initiating…</string>
+    <string name="firmware_update_in_progress">The firmware update has successfully started. You can close this screen and follow the progress in your notification bar.</string>
+    <string name="firmware_update_cancel">Cancel update</string>
+    <string name="firmware_update_hide">Hide</string>
+    <string name="firmware_update_notification_text">Updating firmware…</string>
+
+    <!--RESET PASSWORD-->
+    <string name="reset_password_activity_title">Reset password</string>
+    <string name="reset_password_email">Email</string>
+    <string name="reset_password_button">Reset password</string>
+    <string name="reset_password_success">The reset password link has been sent to provided email.</string>
+    <string name="reset_password_error">No such email</string>
+
+    <!--READING MODS-->
+    <string name="mode_idle">Connected as: Idle</string>
+    <string name="mode_watch">Connected as: Watch</string>
+    <string name="mode_sensor_tag">Connected as: Sensor tag</string>
+    <string name="mode_weather_station">Connected as: Weather station</string>
+    <string name="mode_motion_control">Connected as: Motion control</string>
+    <string name="mode_heartrate">Connected as: Heartrate</string>
+    <string name="mode_pedometer">Connected as: Pedometer</string>
+    <string name="mode_compass">Connected as: Compass</string>
+
+    <!--CHANGE PASSWORD-->
+    <string name="change_password_activity_tile">Password change</string>
+    <string name="change_password_current_password">Current password</string>
+    <string name="change_password_new_password">New password</string>
+    <string name="change_password_success">Password successfully changed.</string>
+    <string name="change_password_error">There was an error while changing password.</string>
+    <string name="change_password_header">Password change</string>
+
+</resources>

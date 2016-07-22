@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    android:persistent="false">
+
+    <PreferenceCategory
+        android:key="pref_key_storage_settings"
+        android:title="Hexiwear settings">
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="BATTERY"
+            android:title="@string/preferences_battery" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="TEMPERATURE"
+            android:title="@string/preferences_temperature" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="PRESSURE"
+            android:title="@string/preferences_pressure" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="HEARTRATE"
+            android:title="@string/preferences_heartrate" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="HUMIDITY"
+            android:title="@string/preferences_humidity" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="LIGHT"
+            android:title="@string/preferences_light" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="STEPS"
+            android:title="@string/preferences_steps" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="ACCELERATION"
+            android:title="@string/preferences_acceleration" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="MAGNET"
+            android:title="@string/preferences_magnet" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="GYRO"
+            android:title="@string/preferences_gyro" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="CALORIES"
+            android:title="@string/preferences_calories" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="WolkSense">
+
+        <ListPreference
+            android:entries="@array/publish_interval_entries"
+            android:entryValues="@array/publish_interval_values"
+            android:key="@string/preferences_publish_interval_key"
+            android:title="Publish time" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="@string/preferences_keep_alive_key"
+            android:summary="@string/preferences_keep_alive_summary"
+            android:title="@string/preferences_keep_alive" />
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="@string/preferences_publish_key"
+            android:title="@string/preferences_publish" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:key="pref_key_info"
+        android:title="Hexiwear info">
+
+        <EditTextPreference
+            android:clickable="false"
+            android:editable="false"
+            android:key="@string/preferences_manufacturer_info"
+            android:title="Manufacturer" />
+
+        <EditTextPreference
+            android:clickable="false"
+            android:editable="false"
+            android:key="@string/preferences_fw_version"
+            android:title="Firmware version" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

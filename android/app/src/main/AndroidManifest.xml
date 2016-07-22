@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.wolkabout.hexiwear">
+
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="com.google.android.gm.permission.READ_CONTENT_PROVIDER" />
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
+    <uses-permission android:name="android.permission.READ_SMS" />
+
+    <uses-feature
+        android:name="android.hardware.telephony"
+        android:required="false" />
+    <uses-feature
+        android:name="android.hardware.bluetooth_le"
+        android:required="true" />
+
+    <application
+        android:name=".HexiwearApplication_"
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+        <activity
+            android:name=".activity.LoginActivity_"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait"
+            android:theme="@style/Blues">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+
+                <data
+                    android:host="wolksense.com"
+                    android:scheme="https" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".activity.SignUpActivity_"
+            android:label="@string/registration_activity_title"
+            android:screenOrientation="portrait"
+            android:theme="@style/Blues" />
+        <activity
+            android:name=".activity.MainActivity_"
+            android:label="@string/discovery_available_devices"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activity.ReadingsActivity_"
+            android:label="@string/readings_activity_title"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activity.SettingsActivity_"
+            android:label="@string/preferences_activity_title"
+            android:parentActivityName=".activity.ReadingsActivity_"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activity.FirmwareSelectActivity_"
+            android:label="@string/firmware_update_activity_title"
+            android:screenOrientation="portrait"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activity.ResetPasswordActivity_"
+            android:label="@string/reset_password_activity_title"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".activity.PasswordChangeActivity_"
+            android:label="@string/change_password_activity_tile"
+            android:theme="@style/AppTheme.NoActionBar"/>
+
+        <service
+            android:name=".service.BluetoothService_"
+            android:exported="false" />
+        <service
+            android:name=".service.FirmwareUpdateService_"
+            android:exported="false" />
+        <service
+            android:name=".service.NotificationService_"
+            android:exported="false" />
+
+
+    </application>
+
+</manifest>

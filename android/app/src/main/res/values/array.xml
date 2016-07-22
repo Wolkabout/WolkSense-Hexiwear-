@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="publish_interval_entries">
+        <item>"10 seconds"</item>
+        <item>"30 seconds"</item>
+        <item>"1 minute"</item>
+        <item>"5 minutes"</item>
+    </string-array>
+    <string-array name="publish_interval_values">
+        <item>"10"</item>
+        <item>"30"</item>
+        <item>"60"</item>
+        <item>"300"</item>
+    </string-array>
+</resources>

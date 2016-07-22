@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/toggleTracking"
+        android:icon="@drawable/ic_cloud_off_white_48dp"
+        android:orderInCategory="3"
+        android:title="@string/readings_option_toggle_tracking"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/openSettings"
+        android:orderInCategory="100"
+        android:title="@string/readings_option_settings"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/setTime"
+        android:orderInCategory="100"
+        android:title="@string/readings_option_set_clock"
+        app:showAsAction="never" />
+
+</menu>

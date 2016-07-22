@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/coordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true"
+    tools:context=".activity.ReadingsActivity">
+
+    <android.support.design.widget.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/AppTheme.AppBarOverlay">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/AppTheme.PopupOverlay">
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:indeterminate="true"
+                android:visibility="invisible"/>
+        </android.support.v7.widget.Toolbar>
+
+    </android.support.design.widget.AppBarLayout>
+
+    <ScrollView
+        android:id="@+id/scrollView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin">
+
+            <TextView
+                android:id="@+id/connectionStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Connecting..."
+                android:textAppearance="?android:attr/textAppearanceMedium"/>
+
+            <LinearLayout
+                android:id="@+id/readings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <com.wolkabout.hexiwear.view.SingleReading_
+                    android:id="@+id/readingBattery"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:image="@drawable/ic_battery"
+                    app:readingType="battery"/>
+
+                <com.wolkabout.hexiwear.view.SingleReading_
+                    android:id="@+id/readingTemperature"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:image="@drawable/ic_temperature"
+                    app:readingType="temperature"/>
+
+                <com.wolkabout.hexiwear.view.SingleReading_
+                    android:id="@+id/readingHumidity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:image="@drawable/ic_humidity"
+                    app:readingType="humidity"/>
+
+                <com.wolkabout.hexiwear.view.SingleReading_
+                    android:id="@+id/readingPressure"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:image="@drawable/ic_pressure"
+                    app:readingType="pressure"/>
+
+                <com.wolkabout.hexiwear.view.SingleReading_
+                    android:id="@+id/readingHeartRate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:image="@drawable/ic_heartbeat"
+                    app:readingType="heartrate"/>
+
+                <com.wolkabout.hexiwear.view.SingleReading_
+                    android:id="@+id/readingLight"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:image="@drawable/ic_light"
+                    app:readingType="light"/>
+
+                <com.wolkabout.hexiwear.view.SingleReading_
+                    android:id="@+id/readingSteps"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:image="@drawable/ic_steps"
+                    app:readingType="steps"/>
+
+                <com.wolkabout.hexiwear.view.SingleReading_
+                    android:id="@+id/readingCalories"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:image="@drawable/ic_calories"
+                    app:readingType="calories"/>
+
+                <com.wolkabout.hexiwear.view.TripleReading_
+                    android:id="@+id/readingAcceleration"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:image="@drawable/ic_accelerometer"
+                    app:readingType="acceleration"/>
+
+                <com.wolkabout.hexiwear.view.TripleReading_
+                    android:id="@+id/readingMagnet"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:image="@drawable/ic_magnet"
+                    app:readingType="magnet"/>
+
+                <com.wolkabout.hexiwear.view.TripleReading_
+                    android:id="@+id/readingGyro"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:image="@drawable/ic_gyroscope"
+                    app:readingType="gyro"/>
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+</android.support.design.widget.CoordinatorLayout>
