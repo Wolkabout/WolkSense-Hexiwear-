@@ -24,7 +24,11 @@ package com.wolkabout.hexiwear.activity;
 
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.LinkMovementMethod;
+import android.view.View;
+import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.wolkabout.hexiwear.R;
@@ -60,6 +64,18 @@ public class SignUpActivity extends AppCompatActivity {
     @ViewById
     CheckBox termsAndConditions;
 
+    @ViewById
+    TextView privacyPolicy;
+
+    @ViewById
+    TextView licenceTerms;
+
+    @ViewById
+    LinearLayout signingUp;
+
+    @ViewById
+    Button signUpButton;
+
     @Bean
     Dialog dialog;
 
@@ -68,21 +84,27 @@ public class SignUpActivity extends AppCompatActivity {
 
     @AfterViews
     void init() {
-        termsAndConditions.setMovementMethod(LinkMovementMethod.getInstance());
+        privacyPolicy.setMovementMethod(LinkMovementMethod.getInstance());
+        licenceTerms.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     @Click(R.id.signUpButton)
-    @Background
     void signUp() {
         if (!validate()) {
             return;
         }
 
         if (!termsAndConditions.isChecked()) {
-            Toast.makeText(this, R.string.registration_accept_terms, Toast.LENGTH_LONG).show();
+            acceptTermsAndConditions();
             return;
         }
+        signUpButton.setEnabled(false);
+        signingUp.setVisibility(View.VISIBLE);
+        startSignUp();
+    }
 
+    @Background
+    void startSignUp() {
         final SignUpDto signUpDto = parseUserInput();
         try {
             authenticationService.signUp(signUpDto);
@@ -90,6 +112,18 @@ public class SignUpActivity extends AppCompatActivity {
         } catch (Exception e) {
             onSignUpError();
         }
+        dismissSigningUpLabel();
+    }
+
+    @UiThread
+    void dismissSigningUpLabel() {
+        signUpButton.setEnabled(true);
+        signingUp.setVisibility(View.GONE);
+    }
+
+    @UiThread
+    void acceptTermsAndConditions() {
+        Toast.makeText(this, R.string.registration_accept_terms, Toast.LENGTH_LONG).show();
     }
 
     @UiThread

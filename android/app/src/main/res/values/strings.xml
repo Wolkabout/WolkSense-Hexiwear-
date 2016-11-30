@@ -33,7 +33,10 @@
     <string name="registration_error_all_fields_required">Please fill in all the registration fields.</string>
     <string name="registration_failed">The registration was not successful. Please try again.</string>
     <string name="registration_accept_terms">In order to proceed, you need to accept the Terms and conditions.</string>
-    <string name="registration_terms_and_conditions">I agree with <a href="https://wolksense.com/documents/privacypolicy.html">privacy policy</a> and <a href="https://wolksense.com/documents/termsofservice.html">Terms &amp; Conditions</a></string>
+    <string name="registration_accept_privacy_and_terms">I agree with privacy policy and Terms &amp; Conditions</string>
+    <string name="registration_privacy_policy">See <a href="https://wolksense.com/documents/privacypolicy.html">privacy policy</a>.</string>
+    <string name="registration_terms_and_conditions">See <a href="https://wolksense.com/documents/termsofservice.html">Terms &amp; Conditions</a>.</string>
+    <string name="registration_signing_up">Signing Up</string>
 
     <!--MAIN ACTIVITY-->
     <string name="discovery_available_devices">Available devices</string>
