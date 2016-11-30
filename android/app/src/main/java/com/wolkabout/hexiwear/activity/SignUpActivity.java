@@ -95,9 +95,10 @@ public class SignUpActivity extends AppCompatActivity {
         }
 
         if (!termsAndConditions.isChecked()) {
-            acceptTermsAndConditions();
+            Toast.makeText(this, R.string.registration_accept_terms, Toast.LENGTH_LONG).show();
             return;
         }
+
         signUpButton.setEnabled(false);
         signingUp.setVisibility(View.VISIBLE);
         startSignUp();
@@ -119,11 +120,6 @@ public class SignUpActivity extends AppCompatActivity {
     void dismissSigningUpLabel() {
         signUpButton.setEnabled(true);
         signingUp.setVisibility(View.GONE);
-    }
-
-    @UiThread
-    void acceptTermsAndConditions() {
-        Toast.makeText(this, R.string.registration_accept_terms, Toast.LENGTH_LONG).show();
     }
 
     @UiThread
