@@ -7,3 +7,6 @@
 /captures
 .idea
 *.iml
+
+/app/publishing
+/app/hexiwear.properties

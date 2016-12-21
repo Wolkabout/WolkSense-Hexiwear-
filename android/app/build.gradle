@@ -9,8 +9,8 @@ android {
         applicationId "com.wolkabout.hexiwear"
         minSdkVersion 19
         targetSdkVersion 22
-        versionCode 25
-        versionName "1.25"
+        versionCode 26
+        versionName "1.26"
     }
     buildTypes {
         release {
@@ -30,6 +30,24 @@ android {
         exclude 'LICENSE.txt'
         exclude 'META-INF/services/org.androidannotations.plugin.AndroidAnnotationsPlugin'
         exclude 'asm-license.txt'
+    }
+    if (project.hasProperty("hexiwear.properties") && file(project.property("hexiwear.properties")).exists()) {
+        Properties properties = new Properties()
+        properties.load(new FileInputStream(file(project.property("hexiwear.properties"))))
+
+        signingConfigs {
+            release {
+                storeFile file(properties['keystore'])
+                storePassword properties['keystore.password']
+                keyAlias properties['keyAlias']
+                keyPassword properties['keyPassword']
+            }
+        }
+        buildTypes {
+            release {
+                signingConfig signingConfigs.release
+            }
+        }
     }
 }
 
