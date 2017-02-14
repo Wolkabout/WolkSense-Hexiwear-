@@ -9,8 +9,8 @@ android {
         applicationId "com.wolkabout.hexiwear"
         minSdkVersion 19
         targetSdkVersion 22
-        versionCode 26
-        versionName "1.26"
+        versionCode 27
+        versionName "1.27"
     }
     buildTypes {
         release {
@@ -71,9 +71,9 @@ dependencies {
     compile "org.parceler:parceler-api:$ParcelerVersion"
     apt "org.parceler:parceler:$ParcelerVersion"
 
-    compile 'com.wolkabout:restandroid:1.0.6'
-    compile 'com.wolkabout:wolk:1.0'
 
+    compile 'com.wolkabout:restandroid:1.1.7.PRODUCTION'
+    compile 'com.wolkabout:wolk:1.0'
     compile 'org.springframework.android:spring-android-rest-template:2.0.0.M3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.5'
 }
