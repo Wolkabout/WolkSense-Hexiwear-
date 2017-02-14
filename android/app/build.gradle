@@ -9,8 +9,8 @@ android {
         applicationId "com.wolkabout.hexiwear"
         minSdkVersion 19
         targetSdkVersion 22
-        versionCode 27
-        versionName "1.27"
+        versionCode 28
+        versionName "1.28"
     }
     buildTypes {
         release {
@@ -76,6 +76,8 @@ dependencies {
     compile 'com.wolkabout:wolk:1.0'
     compile 'org.springframework.android:spring-android-rest-template:2.0.0.M3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.5'
+
+    debugCompile 'com.google.firebase:firebase-crash:10.0.1'
 }
 
 apt {
@@ -83,3 +85,5 @@ apt {
         androidManifestFile variant.outputs[0].processResources.manifestFile
     }
 }
+
+apply plugin: 'com.google.gms.google-services'
