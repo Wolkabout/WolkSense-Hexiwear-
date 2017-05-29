@@ -31,16 +31,10 @@
             android:name=".activity.LoginActivity_"
             android:label="@string/app_name"
             android:screenOrientation="portrait"
-            android:theme="@style/Blues">
+            android:theme="@style/Blues"
+            android:windowSoftInputMode="stateHidden">
             <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
                 <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:host="wolksense.com"
-                    android:scheme="https" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -52,7 +46,8 @@
             android:name=".activity.SignUpActivity_"
             android:label="@string/registration_activity_title"
             android:screenOrientation="portrait"
-            android:theme="@style/Blues" />
+            android:theme="@style/Blues"
+            android:windowSoftInputMode="stateHidden"/>
         <activity
             android:name=".activity.MainActivity_"
             android:label="@string/discovery_available_devices"
@@ -82,6 +77,7 @@
         <activity
             android:name=".activity.PasswordChangeActivity_"
             android:label="@string/change_password_activity_tile"
+            android:windowSoftInputMode="stateHidden"
             android:theme="@style/AppTheme.NoActionBar"/>
 
         <service

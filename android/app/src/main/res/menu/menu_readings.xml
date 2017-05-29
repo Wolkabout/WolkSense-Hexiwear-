@@ -21,4 +21,10 @@
         android:title="@string/readings_option_set_clock"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/unpair"
+        android:orderInCategory="100"
+        android:title="@string/readings_option_unpair"
+        app:showAsAction="never" />
+
 </menu>

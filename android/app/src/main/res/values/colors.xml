@@ -27,5 +27,6 @@
     <color name="cold">#66FFCC</color>
     <color name="screen_background">#dcdcdc</color>
     <color name="graph_background">#f0f0f0</color>
+    <color name="red_dark">#6d0000</color>
 
 </resources>

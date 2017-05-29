@@ -87,17 +87,23 @@
         android:key="pref_key_info"
         android:title="Hexiwear info">
 
-        <EditTextPreference
+        <Preference
             android:clickable="false"
             android:editable="false"
             android:key="@string/preferences_manufacturer_info"
-            android:title="Manufacturer" />
+            android:title="@string/preferences_manufacturer_title" />
 
-        <EditTextPreference
+        <Preference
             android:clickable="false"
             android:editable="false"
             android:key="@string/preferences_fw_version"
-            android:title="Firmware version" />
+            android:title="@string/preferences_firmware_version_title" />
+
+        <Preference
+            android:clickable="false"
+            android:editable="false"
+            android:key="@string/preferences_app_version"
+            android:title="@string/preferences_app_version_title"/>
 
     </PreferenceCategory>
 

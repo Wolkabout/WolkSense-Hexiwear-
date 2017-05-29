@@ -1,28 +1,28 @@
 /**
- *  Hexiwear application is used to pair with Hexiwear BLE devices
- *  and send sensor readings to WolkSense sensor data cloud
- *
- *  Copyright (C) 2016 WolkAbout Technology s.r.o.
- *
- *  Hexiwear is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  Hexiwear is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Hexiwear application is used to pair with Hexiwear BLE devices
+ * and send sensor readings to WolkSense sensor data cloud
+ * <p>
+ * Copyright (C) 2016 WolkAbout Technology s.r.o.
+ * <p>
+ * Hexiwear is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * <p>
+ * Hexiwear is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.wolkabout.hexiwear.activity;
 
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
@@ -34,6 +34,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.wolkabout.hexiwear.R;
@@ -43,6 +44,7 @@ import com.wolkabout.hexiwear.service.BluetoothService;
 import com.wolkabout.hexiwear.service.BluetoothService_;
 import com.wolkabout.hexiwear.service.DeviceDiscoveryService;
 import com.wolkabout.hexiwear.service.DeviceRegistrationService;
+import com.wolkabout.hexiwear.util.Dialog;
 import com.wolkabout.hexiwear.util.HexiwearDevices;
 import com.wolkabout.wolkrestandroid.Credentials_;
 
@@ -81,6 +83,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     @ViewById
     Toolbar toolbar;
 
+    @ViewById
+    TextView emptyListView;
+
     @OptionsMenuItem
     MenuItem toggleTracking;
 
@@ -96,6 +101,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     @Bean
     HexiwearDevices devicesStore;
 
+    @Bean
+    Dialog dialog;
+
     private boolean serviceBound;
 
     @AfterInject
@@ -105,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @AfterViews
     void setViews() {
+        Log.d(TAG, "Setting views ...");
         setSupportActionBar(toolbar);
         listDevices.setAdapter(adapter);
         deviceDiscoveryService.startScan();
@@ -125,6 +134,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     @ItemClick(R.id.listDevices)
     void bondWithDevice(final BluetoothDeviceWrapper wrapper) {
+        Log.d(TAG, "Device clicked.");
         deviceDiscoveryService.cancelScan();
         final BluetoothDevice device = wrapper.getDevice();
         if (device.getBondState() == BluetoothDevice.BOND_BONDED) {
@@ -134,16 +144,29 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         }
     }
 
-    // TODO This is a method to help with development. Remove once its no longer needed.
     @ItemLongClick(R.id.listDevices)
-    void unbindDevice(final BluetoothDeviceWrapper wrapper) {
+    void unbindSelectedDevice(final BluetoothDeviceWrapper wrapper) {
+        if (wrapper.getDevice().getBondState() != BluetoothDevice.BOND_BONDED) {
+            return;
+        }
+
+        dialog.showConfirmation(0, R.string.unpair_message, R.string.yes, R.string.no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                unbindDevice(wrapper);
+            }
+        }, true);
+    }
+
+    private void unbindDevice(BluetoothDeviceWrapper wrapper) {
         try {
             final BluetoothDevice device = wrapper.getDevice();
             device.getClass().getMethod("removeBond", (Class[]) null).invoke(device, (Object[]) null);
-            Toast.makeText(this, "Device unpaired.", Toast.LENGTH_SHORT).show();
+            dialog.shortToast(R.string.device_unpaired);
             adapter.notifyDataSetChanged();
         } catch (Exception e) {
             Log.e(TAG, "Can't remove bond", e);
+            dialog.shortToast(R.string.failed_to_unpair);
         }
     }
 
@@ -178,24 +201,40 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         super.onDestroy();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        if (adapter == null) {
+            return;
+        }
+
+        adapter.notifyDataSetChanged();
+    }
+
     @Receiver(actions = DeviceDiscoveryService.SCAN_STARTED, local = true)
     void onScanningStarted() {
+        emptyListView.setVisibility(View.GONE);
         progressBar.setVisibility(View.VISIBLE);
         toolbar.setTitle(R.string.discovery_scanning);
     }
 
     @Receiver(actions = DeviceDiscoveryService.SCAN_STOPPED, local = true)
     void onScanningStopped() {
+        if (adapter.getCount() == 0) {
+            emptyListView.setVisibility(View.VISIBLE);
+        }
         progressBar.setVisibility(View.INVISIBLE);
         toolbar.setTitle(credentials.username().get());
     }
 
     @Receiver(actions = DeviceDiscoveryService.DEVICE_DISCOVERED, local = true)
     void onBluetoothDeviceFound(@Receiver.Extra final BluetoothDeviceWrapper wrapper) {
+        emptyListView.setVisibility(View.GONE);
         adapter.add(wrapper);
     }
 
-    @Receiver(actions = BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+    @Receiver(actions = BluetoothDevice.ACTION_BOND_STATE_CHANGED, registerAt = Receiver.RegisterAt.OnResumeOnPause)
     void onBondStateChanged(Intent intent) {
         final BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
         final int previousBondState = intent.getIntExtra(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE, -1);
@@ -204,10 +243,17 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         Log.d(TAG, device.getName() + "(" + device.getAddress() + ") changed state: " + previousBondState + " -> " + newBondState);
         adapter.notifyDataSetChanged();
 
+        if (newBondState == BluetoothDevice.BOND_BONDING && previousBondState == BluetoothDevice.BOND_NONE) {
+            Log.e(TAG, "Was bonding, but failed.");
+            Toast.makeText(this, R.string.discovery_pairing_notification, Toast.LENGTH_SHORT).show();
+        }
+
         if (newBondState == BluetoothDevice.BOND_BONDED) {
+            Log.d(TAG, "New bond state is BONDED, calling onBonded.");
+            dialog.shortToast(R.string.discovery_pairing_successful);
             onBonded(device);
         } else if (previousBondState == BluetoothDevice.BOND_BONDING && newBondState == BluetoothDevice.BOND_NONE) {
-            device.createBond();
+            dialog.shortToast(R.string.discovery_failed_to_pair);
         }
     }
 
@@ -234,4 +280,14 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         finish();
     }
 
+    @Override
+    public void onBackPressed() {
+        dialog.showConfirmationAndCancel(0, R.string.sure_want_to_quit, R.string.yes, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+                finishAffinity();
+            }
+        });
+    }
 }

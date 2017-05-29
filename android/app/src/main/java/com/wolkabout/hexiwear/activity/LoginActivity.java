@@ -1,22 +1,21 @@
 /**
- *  Hexiwear application is used to pair with Hexiwear BLE devices
- *  and send sensor readings to WolkSense sensor data cloud
- *
- *  Copyright (C) 2016 WolkAbout Technology s.r.o.
- *
- *  Hexiwear is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  Hexiwear is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Hexiwear application is used to pair with Hexiwear BLE devices
+ * and send sensor readings to WolkSense sensor data cloud
+ * <p>
+ * Copyright (C) 2016 WolkAbout Technology s.r.o.
+ * <p>
+ * Hexiwear is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * <p>
+ * Hexiwear is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.wolkabout.hexiwear.activity;
@@ -49,6 +48,8 @@ import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 import org.androidannotations.rest.spring.annotations.RestService;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpStatusCodeException;
 
 @EActivity(R.layout.activity_login)
 public class LoginActivity extends AppCompatActivity {
@@ -144,18 +145,26 @@ public class LoginActivity extends AppCompatActivity {
             credentials.accessTokenExpires().put(response.getAccessTokenExpires().getTime());
             credentials.refreshTokenExpires().put(response.getRefreshTokenExpires().getTime());
             MainActivity_.intent(LoginActivity.this).start();
+            finish();
+        } catch (HttpStatusCodeException e) {
+            Log.e(TAG, "signIn: ", e);
+            if (e.getStatusCode() == HttpStatus.UNAUTHORIZED) {
+                onSignInError(R.string.login_error_invalid_credentials);
+                return;
+            }
+
+            onSignInError(R.string.login_error_general);
         } catch (Exception e) {
-            onSignInError();
+            Log.e(TAG, "signIn: ", e);
+            onSignInError(R.string.login_error_general);
         }
     }
 
     @UiThread
-    void onSignInError() {
+    void onSignInError(int messageRes) {
         signInElements.setVisibility(View.VISIBLE);
         signingInElements.setVisibility(View.GONE);
-        emailField.requestFocus();
-        passwordField.clear();
-        dialog.showWarning(R.string.login_error_invalid_credentials);
+        dialog.showWarning(messageRes);
     }
 
     @Click
@@ -165,12 +174,12 @@ public class LoginActivity extends AppCompatActivity {
 
     private boolean validateCredentials() {
         if (emailField.isEmpty()) {
-            emailField.setError(R.string.registration_error_field_required);
+            emailField.setError(R.string.registration_error_email_required);
             return false;
         }
 
         if (passwordField.isEmpty()) {
-            passwordField.setError(R.string.registration_error_field_required);
+            passwordField.setError(R.string.registration_error_password_required);
             return false;
         }
 
