@@ -32,7 +32,7 @@ struct FirmwareFileItem {
 }
 
 class FirmwareSelectionTableViewController: UITableViewController {
-
+    
     var firmwareFilesKW40: [FirmwareFileItem] = []
     var firmwareFilesMK64: [FirmwareFileItem] = []
     var peri: CBPeripheral!
@@ -44,71 +44,92 @@ class FirmwareSelectionTableViewController: UITableViewController {
     var refreshCont: UIRefreshControl!
     var hexiwearDelegate: HexiwearPeripheralDelegate?
     var otapDelegate: OTAPDelegate?
-
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         self.refreshCont = UIRefreshControl()
-        self.refreshCont.addTarget(self, action: #selector(FirmwareSelectionTableViewController.refresh(_:)), forControlEvents: UIControlEvents.ValueChanged)
+        self.refreshCont.addTarget(self, action: #selector(FirmwareSelectionTableViewController.refresh(_:)), for: UIControlEvents.valueChanged)
         self.tableView.addSubview(refreshCont)
         
         title = "Select firmware file"
     }
     
-    func refresh(sender:AnyObject) {
+    func refresh(_ sender:AnyObject) {
         // Code to refresh table view
         getFirmwareFiles()
         tableView.reloadData()
         self.refreshCont.endRefreshing()
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         getFirmwareFiles()
     }
-
-    override func viewWillDisappear(animated: Bool) {
-        if isMovingFromParentViewController() {
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        if isMovingFromParentViewController {
             hexiwearDelegate?.didUnwind()
         }
     }
-
-    private func getFactorySettingsFirmwareFiles() {
+    
+    fileprivate func getFactorySettingsFirmwareFiles() {
         firmwareFilesKW40 = []
         firmwareFilesMK64 = []
-
-        guard let _ = NSBundle.mainBundle().pathForResource("HEXIWEAR_KW40_factory_settings", ofType: "img") else { return }
-        let kw40FW = FirmwareFileItem(fileName: "HEXIWEAR_KW40_factory_settings.img", fileVersion: "version: 1.0.0", factory: true)
-        firmwareFilesKW40.append(kw40FW)
         
-        guard let _ = NSBundle.mainBundle().pathForResource("HEXIWEAR_MK64_factory_settings", ofType: "img") else { return }
-        let mk64FW = FirmwareFileItem(fileName: "HEXIWEAR_MK64_factory_settings.img", fileVersion: "version: 1.0.0", factory: true)
-        firmwareFilesMK64.append(mk64FW)
+        guard let pathKW40 = Bundle.main.path(forResource: "HEXIWEAR_KW40_factory_settings", ofType: "img") else { return }
+        guard let kw40Data = NSData(contentsOfFile: pathKW40) else { return }
+        var kw40dataBytes: [UInt8] = [UInt8](repeating: 0x00, count: kw40Data.length)
+        let kw40dataLength = kw40Data.length
+        kw40Data.getBytes(&kw40dataBytes, length: kw40dataLength)
+        
+        // Parse FW file header
+        if let otapKW40ImageFileHeader = OTAImageFileHeader(data: kw40Data as Data) {
+            selectedFileVersion = "version: \(otapKW40ImageFileHeader.imageVersionAsString())"
+            let kw40FW = FirmwareFileItem(fileName: "HEXIWEAR_KW40_factory_settings.img", fileVersion: selectedFileVersion, factory: true)
+            firmwareFilesKW40.append(kw40FW)
+        }
+        
+        guard let pathMK64 = Bundle.main.path(forResource: "HEXIWEAR_MK64_factory_settings", ofType: "img") else { return }
+        
+        guard let mk64Data = NSData(contentsOfFile: pathMK64) else { return }
+        var mk64dataBytes: [UInt8] = [UInt8](repeating: 0x00, count: mk64Data.length)
+        let mk64dataLength = mk64Data.length
+        mk64Data.getBytes(&mk64dataBytes, length: mk64dataLength)
+        
+        
+        // Parse FW file header
+        if let otapMK64ImageFileHeader = OTAImageFileHeader(data: mk64Data as Data) {
+            selectedFileVersion = "version: \(otapMK64ImageFileHeader.imageVersionAsString())"
+            let mk64FW = FirmwareFileItem(fileName: "HEXIWEAR_MK64_factory_settings.img", fileVersion: selectedFileVersion, factory: true)
+            firmwareFilesMK64.append(mk64FW)
+        }
+        
     }
     
-    private func getFirmwareFiles() {
+    fileprivate func getFirmwareFiles() {
         firmwareFilesKW40 = []
         firmwareFilesMK64 = []
         
         getFactorySettingsFirmwareFiles()
         privateDocsDir = getPrivateDocumentsDirectory()
-        let fileManager = NSFileManager.defaultManager()
+        let fileManager = FileManager.default
         
         do {
-            let fwFilesPaths = try fileManager.contentsOfDirectoryAtPath(privateDocsDir!)
+            let fwFilesPaths = try fileManager.contentsOfDirectory(atPath: privateDocsDir!)
             for file in fwFilesPaths {
-                let fullFileName = (self.privateDocsDir! as NSString).stringByAppendingPathComponent(file)
-
-                if let data = NSData(contentsOfFile: fullFileName) {
-                    var dataBytes: [UInt8] = [UInt8](count: data.length, repeatedValue: 0x00)
-                    let length = data.length
-                    data.getBytes(&dataBytes, length: length)
+                let fullFileName = (self.privateDocsDir! as NSString).appendingPathComponent(file)
+                
+                if let data = try? Data(contentsOf: URL(fileURLWithPath: fullFileName)) {
+                    var dataBytes: [UInt8] = [UInt8](repeating: 0x00, count: data.count)
+                    let length = data.count
+                    (data as NSData).getBytes(&dataBytes, length: length)
                     
                     // Parse FW file header
                     if let otapImageFileHeader = OTAImageFileHeader(data: data) {
                         selectedFileVersion = "version: \(otapImageFileHeader.imageVersionAsString())"
                         let firmwareFile = FirmwareFileItem(fileName: file, fileVersion: selectedFileVersion, factory: false)
-
+                        
                         if otapImageFileHeader.imageId == 1 {
                             firmwareFilesKW40.append(firmwareFile)
                         }
@@ -122,10 +143,10 @@ class FirmwareSelectionTableViewController: UITableViewController {
             print(error)
         }
     }
-
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toFWUpgrade" {
-            if let vc = segue.destinationViewController as? FWUpgradeViewController {
+            if let vc = segue.destination as? FWUpgradeViewController {
                 vc.fwPath = selectedFile
                 vc.fwFileName = selectedFileName
                 vc.fwTypeString = selectedType
@@ -136,35 +157,35 @@ class FirmwareSelectionTableViewController: UITableViewController {
             }
         }
     }
-
+    
     // MARK: - Table view data source
     
-    override func numberOfSectionsInTableView(tableView: UITableView) -> Int {
+    override func numberOfSections(in tableView: UITableView) -> Int {
         return 2
     }
-
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return section == 0 ? firmwareFilesKW40.count : firmwareFilesMK64.count
     }
     
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         if section == 0 {
             return "KW40"
         }
         return "MK64"
     }
     
-    override func tableView(tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
+    override func tableView(_ tableView: UITableView, willDisplayHeaderView view: UIView, forSection section: Int) {
         if let headerView = view as? UITableViewHeaderFooterView {
             headerView.contentView.backgroundColor = UIColor(red: 127.0/255.0, green: 147.0/255.0, blue: 0.0, alpha: 0.6)
             headerView.alpha = 0.95
         }
     }
     
-
-
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("firmwareCell", forIndexPath: indexPath)
+    
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "firmwareCell", for: indexPath)
         
         if indexPath.section == 0 {
             let firmwareFile = firmwareFilesKW40[indexPath.row]
@@ -180,29 +201,29 @@ class FirmwareSelectionTableViewController: UITableViewController {
     }
     
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         // If the first item of any section is tapped, that is factory file which is embedded in bundle
         // File path is different than for other FW files
         
         if indexPath.section == 0 && indexPath.row == 0 { // factory KW40
-            guard let strPathKW40 = NSBundle.mainBundle().pathForResource("HEXIWEAR_KW40_factory_settings", ofType: "img") else { return }
+            guard let strPathKW40 = Bundle.main.path(forResource: "HEXIWEAR_KW40_factory_settings", ofType: "img") else { return }
             selectedType = "KW40"
             selectedFileVersion = "1.0.0"
             selectedFileName = "HEXIWEAR_KW40_factory_settings.img"
             selectedFile = strPathKW40
-            performSegueWithIdentifier("toFWUpgrade", sender: nil)
-
+            performSegue(withIdentifier: "toFWUpgrade", sender: nil)
+            
             return
         }
         
         if indexPath.section == 1 && indexPath.row == 0 { // factory MK64
-            guard let strPathMK64 = NSBundle.mainBundle().pathForResource("HEXIWEAR_MK64_factory_settings", ofType: "img") else { return }
+            guard let strPathMK64 = Bundle.main.path(forResource: "HEXIWEAR_MK64_factory_settings", ofType: "img") else { return }
             selectedType = "MK64"
             selectedFileVersion = "1.0.0"
             selectedFileName = "HEXIWEAR_MK64_factory_settings.img"
             selectedFile = strPathMK64
-            performSegueWithIdentifier("toFWUpgrade", sender: nil)
+            performSegue(withIdentifier: "toFWUpgrade", sender: nil)
             
             return
         }
@@ -210,12 +231,12 @@ class FirmwareSelectionTableViewController: UITableViewController {
         
         guard let selectedFWFile = getFileForIndexPath(indexPath) else { return }
         selectedFileName = selectedFWFile
-        let fullFileName = (self.privateDocsDir! as NSString).stringByAppendingPathComponent(selectedFWFile)
+        let fullFileName = (self.privateDocsDir! as NSString).appendingPathComponent(selectedFWFile)
         selectedFile = fullFileName
-        if let data = NSData(contentsOfFile: fullFileName) {
-            var dataBytes: [UInt8] = [UInt8](count: data.length, repeatedValue: 0x00)
-            let length = data.length
-            data.getBytes(&dataBytes, length: length)
+        if let data = try? Data(contentsOf: URL(fileURLWithPath: fullFileName)) {
+            var dataBytes: [UInt8] = [UInt8](repeating: 0x00, count: data.count)
+            let length = data.count
+            (data as NSData).getBytes(&dataBytes, length: length)
             
             // Parse FW file header
             if let otapImageFileHeader = OTAImageFileHeader(data: data) {
@@ -228,55 +249,55 @@ class FirmwareSelectionTableViewController: UITableViewController {
                 selectedFileVersion = otapImageFileHeader.imageVersionAsString()
             }
         }
-
-        performSegueWithIdentifier("toFWUpgrade", sender: nil)
+        
+        performSegue(withIdentifier: "toFWUpgrade", sender: nil)
         
     }
     
-    override func tableView(tableView: UITableView, canEditRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
         // let the controller to know that able to edit tableView's row
         return true
     }
     
     
-    override func tableView(tableView: UITableView, editActionsForRowAtIndexPath indexPath: NSIndexPath) -> [UITableViewRowAction]?  {
-        let deleteAction = UITableViewRowAction(style: .Default, title: "Delete", handler: { (action , indexPath) -> Void in
+    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]?  {
+        let deleteAction = UITableViewRowAction(style: .default, title: "Delete", handler: { (action , indexPath) -> Void in
             
             let item = indexPath.section == 0 ? self.firmwareFilesKW40[indexPath.row] : self.firmwareFilesMK64[indexPath.row]
             
-            let fileManager = NSFileManager.defaultManager()
+            let fileManager = FileManager.default
             
             do {
-                let fullFileName = (self.privateDocsDir! as NSString).stringByAppendingPathComponent(item.fileName)
-                try fileManager.removeItemAtPath(fullFileName)
-                dispatch_async(dispatch_get_main_queue()) {
+                let fullFileName = (self.privateDocsDir! as NSString).appendingPathComponent(item.fileName)
+                try fileManager.removeItem(atPath: fullFileName)
+                DispatchQueue.main.async {
                     if indexPath.section == 0 {
-                        self.firmwareFilesKW40.removeAtIndex(indexPath.row)
+                        self.firmwareFilesKW40.remove(at: indexPath.row)
                     }
                     else {
-                        self.firmwareFilesMK64.removeAtIndex(indexPath.row)
+                        self.firmwareFilesMK64.remove(at: indexPath.row)
                     }
-                    self.tableView.deleteRowsAtIndexPaths([indexPath], withRowAnimation: .Fade)
+                    self.tableView.deleteRows(at: [indexPath], with: .fade)
                 }
             } catch {
                 print(error)
             }
         })
         
-        deleteAction.backgroundColor = UIColor.redColor()
+        deleteAction.backgroundColor = UIColor.red
         
         return [deleteAction]
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 60.0
     }
     
-    private func getFileForIndexPath(indexPath: NSIndexPath) -> String? {
+    fileprivate func getFileForIndexPath(_ indexPath: IndexPath) -> String? {
         if indexPath.section == 0 {
             return indexPath.row >= firmwareFilesKW40.count ? nil : firmwareFilesKW40[indexPath.row].fileName
         }
-
+        
         return indexPath.row >= firmwareFilesMK64.count ? nil : firmwareFilesMK64[indexPath.row].fileName
     }
 }

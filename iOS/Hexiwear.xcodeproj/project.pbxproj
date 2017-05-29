@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		457597BC2357A2B452681AFD /* Pods_Hexiwear.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D47896B4857BB381B64ABCA8 /* Pods_Hexiwear.framework */; };
 		B3AB921D1D40B9C600368526 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3AB921C1D40B9C600368526 /* AppDelegate.swift */; };
 		B3AB92221D40B9C600368526 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = B3AB92201D40B9C600368526 /* Main.storyboard */; };
 		B3AB92241D40B9C600368526 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = B3AB92231D40B9C600368526 /* Assets.xcassets */; };
@@ -49,6 +50,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		9791AE0B6682BE2B7C24F4BC /* Pods-Hexiwear.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hexiwear.release.xcconfig"; path = "Pods/Target Support Files/Pods-Hexiwear/Pods-Hexiwear.release.xcconfig"; sourceTree = "<group>"; };
 		B3AB92191D40B9C600368526 /* Hexiwear.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Hexiwear.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B3AB921C1D40B9C600368526 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B3AB92211D40B9C600368526 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -94,6 +96,8 @@
 		B3AB932E1D40BC5000368526 /* MSWeakTimer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MSWeakTimer.h; sourceTree = "<group>"; };
 		B3AB932F1D40BC5000368526 /* MSWeakTimer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MSWeakTimer.m; sourceTree = "<group>"; };
 		B3AB93371D40BC7500368526 /* Hexiwear-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "Hexiwear-Bridging-Header.h"; sourceTree = "<group>"; };
+		C6087A0BEBB30A155C88589D /* Pods-Hexiwear.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Hexiwear.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Hexiwear/Pods-Hexiwear.debug.xcconfig"; sourceTree = "<group>"; };
+		D47896B4857BB381B64ABCA8 /* Pods_Hexiwear.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Hexiwear.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -101,6 +105,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				457597BC2357A2B452681AFD /* Pods_Hexiwear.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,8 @@
 			children = (
 				B3AB921B1D40B9C600368526 /* Hexiwear */,
 				B3AB921A1D40B9C600368526 /* Products */,
+				F474EA2EC477505969C412BC /* Pods */,
+				E23C202675FD00388EB14039 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -262,6 +269,23 @@
 			path = CocoaMQTT;
 			sourceTree = "<group>";
 		};
+		E23C202675FD00388EB14039 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				D47896B4857BB381B64ABCA8 /* Pods_Hexiwear.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F474EA2EC477505969C412BC /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				C6087A0BEBB30A155C88589D /* Pods-Hexiwear.debug.xcconfig */,
+				9791AE0B6682BE2B7C24F4BC /* Pods-Hexiwear.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -269,9 +293,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = B3AB922B1D40B9C600368526 /* Build configuration list for PBXNativeTarget "Hexiwear" */;
 			buildPhases = (
+				4E92EDF9EF6FFC57382EEEEF /* [CP] Check Pods Manifest.lock */,
 				B3AB92151D40B9C600368526 /* Sources */,
 				B3AB92161D40B9C600368526 /* Frameworks */,
 				B3AB92171D40B9C600368526 /* Resources */,
+				8EC283DA1E45A207F2533571 /* [CP] Embed Pods Frameworks */,
+				5026F68845EC5ACFB873A934 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -294,6 +321,7 @@
 				TargetAttributes = {
 					B3AB92181D40B9C600368526 = {
 						CreatedOnToolsVersion = 7.3.1;
+						LastSwiftMigration = 0830;
 					};
 				};
 			};
@@ -330,6 +358,54 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4E92EDF9EF6FFC57382EEEEF /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		5026F68845EC5ACFB873A934 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Hexiwear/Pods-Hexiwear-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		8EC283DA1E45A207F2533571 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Hexiwear/Pods-Hexiwear-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		B3AB92151D40B9C600368526 /* Sources */ = {
@@ -475,23 +551,29 @@
 		};
 		B3AB922C1D40B9C600368526 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = C6087A0BEBB30A155C88589D /* Pods-Hexiwear.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Hexiwear/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wolkabout.Hexiwear;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Debug;
 		};
 		B3AB922D1D40B9C600368526 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 9791AE0B6682BE2B7C24F4BC /* Pods-Hexiwear.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Hexiwear/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.wolkabout.Hexiwear;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 3.0;
 			};
 			name = Release;
 		};

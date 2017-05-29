@@ -23,6 +23,7 @@
 
 import UIKit
 import CoreBluetooth
+import JGProgressHUD
 
 struct HexiwearPeripheral {
     let p: CBPeripheral
@@ -32,12 +33,12 @@ struct HexiwearPeripheral {
 }
 
 protocol HexiwearReconnection {
-    func didReconnectPeripheral(peripheral: CBPeripheral)
+    func didReconnectPeripheral(_ peripheral: CBPeripheral)
     func didDisconnectPeripheral()
 }
 
 class DetectHexiwearTableViewController: UITableViewController {
-
+    
     // BLE
     var centralManager : CBCentralManager!
     var hexiwearPeripherals: [HexiwearPeripheral] = []
@@ -55,69 +56,86 @@ class DetectHexiwearTableViewController: UITableViewController {
     
     var disconnectOnSignOut: Bool = false
     var hexiwearReconnection: HexiwearReconnection?
-    let progressHUD = JGProgressHUD(style: .Dark)
-
-
+    let progressHUD = JGProgressHUD(style: .dark)
+    
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.whiteColor()]
+        self.navigationController!.navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.white]
+        
+        self.tableView.tableFooterView = UIView()
         
         // Initialize central manager
         centralManager = CBCentralManager(delegate: self, queue: nil)
-
+        
         self.refreshCont = UIRefreshControl()
-        self.refreshCont.addTarget(self, action: #selector(DetectHexiwearTableViewController.refresh(_:)), forControlEvents: UIControlEvents.ValueChanged)
+        self.refreshCont.addTarget(self, action: #selector(DetectHexiwearTableViewController.refresh(_:)), for: UIControlEvents.valueChanged)
         self.tableView.addSubview(refreshCont)
-
+        
         title = "Detect"
-
+        
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
+        let indicator = UIActivityIndicatorView()
+        indicator.activityIndicatorViewStyle = .whiteLarge
+        indicator.color = UIColor.black
+        indicator.startAnimating()
+        tableView.backgroundView = indicator
+        
         scanPeripherals()
     }
-
-    func refresh(sender:AnyObject) {
+    
+    func refresh(_ sender:AnyObject) {
         scanPeripherals()
         refreshCont.endRefreshing()
     }
-
-    private func scanPeripherals() {
+    
+    fileprivate func scanPeripherals() {
         hexiwearPeripherals = retrieveConnectedHexiwearPeripherals()
         tableView.reloadData()
-        centralManager.scanForPeripheralsWithServices(nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey:true])
+        centralManager.scanForPeripherals(withServices: nil, options: [CBCentralManagerScanOptionAllowDuplicatesKey:true])
     }
     
-    private func retrieveConnectedHexiwearPeripherals() -> [HexiwearPeripheral] {
+    fileprivate func getNoPeripheralsLabel() -> UILabel {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.text = "No devices found, swipe down to refresh."
+        
+        return label
+    }
+    
+    fileprivate func retrieveConnectedHexiwearPeripherals() -> [HexiwearPeripheral] {
         return
             centralManager
-                .retrieveConnectedPeripheralsWithServices([DIServiceUUID])
+                .retrieveConnectedPeripherals(withServices: [DIServiceUUID])
                 .filter({$0.name == "HEXIWEAR"})
                 .map { peri -> HexiwearPeripheral in
-                    let deviceName = getDeviceNameForHexiSerial(peri.identifier.UUIDString)
+                    let deviceName = getDeviceNameForHexiSerial(peri.identifier.uuidString)
                     return HexiwearPeripheral(p: peri, isOTAP: false, deviceName: deviceName, rssi: nil)
-            }
+        }
     }
     
-    private func getDeviceNameForHexiSerial(hexiSerial: String) -> String {
+    fileprivate func getDeviceNameForHexiSerial(_ hexiSerial: String) -> String {
         let serialMappings = getSerialMappings()
-
+        
         guard let wolkSerialForHexiSerial = device.findHexiAndWolkCombination(hexiSerial, hexiAndWolkSerials: serialMappings) else { return "" }
         
         return dataStore.getDeviceNameForSerial(wolkSerialForHexiSerial) ?? ""
-
+        
     }
     
     // MARK: - Table view data source
-
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        tableView.backgroundView = hexiwearPeripherals.isEmpty ? getNoPeripheralsLabel() : nil
         return hexiwearPeripherals.count
     }
-
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("hexiwearCellNew", forIndexPath: indexPath) as! HexiwearTableViewCell
-
+    
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "hexiwearCellNew", for: indexPath) as! HexiwearTableViewCell
+        
         guard indexPath.row < hexiwearPeripherals.count else {
             cell.titleLabel.text = ""
             cell.detailLabel.text = ""
@@ -133,20 +151,20 @@ class DetectHexiwearTableViewController: UITableViewController {
         else {
             cell.titleLabel?.text = peri.deviceName == "" ? "New HEXIWEAR" : peri.deviceName
         }
-
-        cell.detailLabel?.text = peri.p.identifier.UUIDString
-
-        if let rssi = peri.rssi where rssi.doubleValue < 0.0 {
+        
+        cell.detailLabel?.text = peri.p.identifier.uuidString
+        
+        if let rssi = peri.rssi, rssi.doubleValue < 0.0 {
             cell.signalLabel?.text = getSignalLevel(rssi)
         }
         else {
             cell.signalLabel?.text = ""
         }
-
+        
         return cell
     }
-
-    func getSignalLevel(rssi: NSNumber) -> String {
+    
+    func getSignalLevel(_ rssi: NSNumber) -> String {
         
         if rssi.doubleValue > -50.0 {
             return "●●●●"
@@ -165,19 +183,19 @@ class DetectHexiwearTableViewController: UITableViewController {
         }
     }
     
-    func failureHandler(failureReason: Reason) {
+    func failureHandler(_ failureReason: Reason) {
         delay(0.0) {
-            self.progressHUD.dismiss()
+            self.progressHUD?.dismiss()
             switch failureReason {
-            case .Other(let err):
+            case .other(let err):
                 print("Other error \(err.description)")
             default:
                 print("Default error handler")
             }
         }
     }
-
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard indexPath.row != hexiwearPeripherals.count else { return }
         
         centralManager.stopScan()
@@ -186,22 +204,22 @@ class DetectHexiwearTableViewController: UITableViewController {
         selectedPeripheral = peri.p
         isHEXIOTAP = peri.isOTAP
         titleForReadings = peri.deviceName
-        centralManager.connectPeripheral(selectedPeripheral, options: nil)
+        centralManager.connect(selectedPeripheral, options: nil)
         
-        progressHUD.textLabel.text = "Connecting to \(peri.deviceName)"
-        progressHUD.showInView(self.view, animated: true)
-
+        progressHUD?.textLabel.text = "Connecting to \(peri.deviceName)"
+        progressHUD?.show(in: self.view, animated: true)
+        
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 60.0
     }
-
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
-        progressHUD.dismiss()
-
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        progressHUD?.dismiss()
+        
         if segue.identifier == "toHexiwearDeviceTable" {
-            if let vc = segue.destinationViewController as? HexiwearTableViewController {
+            if let vc = segue.destination as? HexiwearTableViewController {
                 vc.hexiwearPeripheral = selectedPeripheral
                 vc.dataStore = self.dataStore
                 if userCredentials.isDemoUser() {
@@ -218,7 +236,7 @@ class DetectHexiwearTableViewController: UITableViewController {
                         vc.title = title
                     }
                 }
-
+                
                 vc.trackingDevice = self.device
                 vc.mqttAPI = self.mqttAPI
                 vc.hexiwearDelegate = self
@@ -226,17 +244,17 @@ class DetectHexiwearTableViewController: UITableViewController {
                 
                 let serialMappings = getSerialMappings()
                 
-                let hexiSerial = selectedPeripheral.identifier.UUIDString
+                let hexiSerial = selectedPeripheral.identifier.uuidString
                 
                 let (wolkSerialForHexiSerial, wolkPasswordForHexiSerial) = device.findWolkCredentials(hexiSerial, hexiAndWolkSerials: serialMappings)
                 vc.wolkSerialForHexiserial = wolkSerialForHexiSerial
                 vc.wolkPasswordForHexiserial = wolkPasswordForHexiSerial
-
+                
                 centralManager.stopScan()
             }
         }
         else if segue.identifier == "toOTAP" {
-            if let vc = segue.destinationViewController as? FirmwareSelectionTableViewController {
+            if let vc = segue.destination as? FirmwareSelectionTableViewController {
                 vc.peri = selectedPeripheral
                 vc.hexiwearDelegate = self
                 vc.otapDelegate = self
@@ -244,38 +262,38 @@ class DetectHexiwearTableViewController: UITableViewController {
             }
         }
         else if segue.identifier == "toActivateDevice" {
-            if let vc = segue.destinationViewController as? ActivateDeviceViewController {
-                    vc.dataStore = self.dataStore
-                    vc.selectedPeripheral = selectedPeripheral
-                    vc.deviceActivationDelegate = self
+            if let vc = segue.destination as? ActivateDeviceViewController {
+                vc.dataStore = self.dataStore
+                vc.selectedPeripheral = selectedPeripheral
+                vc.deviceActivationDelegate = self
             }
         }
         else if segue.identifier == "toSettingsBase" {
-            if let nc = segue.destinationViewController as? BaseNavigationController,
-                vc = nc.topViewController as? SettingaBaseTableViewController {
-                    vc.title = "Cloud settings"
-                    vc.dataStore = self.dataStore
-                    vc.trackingDevice = self.device
-                    vc.delegate = self
-                    vc.isDemoUser = userCredentials.isDemoUser()
+            if let nc = segue.destination as? BaseNavigationController,
+                let vc = nc.topViewController as? SettingaBaseTableViewController {
+                vc.title = "Cloud settings"
+                vc.dataStore = self.dataStore
+                vc.trackingDevice = self.device
+                vc.delegate = self
+                vc.isDemoUser = userCredentials.isDemoUser()
             }
         }
     }
-
-    private func showAlertWithText (header : String = "Warning", message : String) {
-        let alert = UIAlertController(title: header, message: message, preferredStyle: UIAlertControllerStyle.Alert)
-        alert.addAction(UIAlertAction(title: "Ok", style: UIAlertActionStyle.Destructive, handler: nil))
-        self.presentViewController(alert, animated: true, completion: nil)
+    
+    fileprivate func showAlertWithText (_ header : String = "Warning", message : String) {
+        let alert = UIAlertController(title: header, message: message, preferredStyle: UIAlertControllerStyle.alert)
+        alert.addAction(UIAlertAction(title: "Ok", style: .cancel, handler: nil))
+        self.present(alert, animated: true, completion: nil)
     }
-
+    
 }
 
 
 //MARK:- CBCentralManagerDelegate
 extension DetectHexiwearTableViewController: CBCentralManagerDelegate {
     
-    func centralManagerDidUpdateState(central: CBCentralManager) {
-        if central.state == .PoweredOn {
+    func centralManagerDidUpdateState(_ central: CBCentralManager) {
+        if central.state == .poweredOn {
             scanPeripherals()
         }
         else {
@@ -283,7 +301,7 @@ extension DetectHexiwearTableViewController: CBCentralManagerDelegate {
         }
     }
     
-    private func foundHexiwearIndex(p: CBPeripheral) -> (Bool, Int) {
+    fileprivate func foundHexiwearIndex(_ p: CBPeripheral) -> (Bool, Int) {
         guard hexiwearPeripherals.count > 0 else { return (false, 0) }
         
         for i in 0..<hexiwearPeripherals.count {
@@ -294,10 +312,10 @@ extension DetectHexiwearTableViewController: CBCentralManagerDelegate {
         return (false, 0)
     }
     
-    func centralManager(central: CBCentralManager, didDiscoverPeripheral peripheral: CBPeripheral, advertisementData: [String : AnyObject], RSSI: NSNumber) {
+    func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
         let serialMappings = getSerialMappings()
         
-        let hexiSerial = peripheral.identifier.UUIDString
+        let hexiSerial = peripheral.identifier.uuidString
         
         var deviceNameForSerial: String?
         if let wolkSerialForHexiSerial = device.findHexiAndWolkCombination(hexiSerial, hexiAndWolkSerials: serialMappings) {
@@ -312,7 +330,7 @@ extension DetectHexiwearTableViewController: CBCentralManagerDelegate {
         }
     }
     
-    private func appendOrReplacePeripheral(peripheral: CBPeripheral, isOTAP: Bool, deviceName: String, rssi: NSNumber?) {
+    fileprivate func appendOrReplacePeripheral(_ peripheral: CBPeripheral, isOTAP: Bool, deviceName: String, rssi: NSNumber?) {
         let (found, index) = foundHexiwearIndex(peripheral)
         let newHexiwearPeripheral = HexiwearPeripheral(p: peripheral, isOTAP: isOTAP, deviceName: deviceName, rssi: rssi)
         if !found {
@@ -322,45 +340,45 @@ extension DetectHexiwearTableViewController: CBCentralManagerDelegate {
         else {
             let offset = tableView.contentOffset.y + tableView.contentInset.top
             guard offset >= 0.0 else { return } // do not reload table while it is refreshing
-            hexiwearPeripherals.replaceRange(index...index, with: [newHexiwearPeripheral])
+            hexiwearPeripherals.replaceSubrange(index...index, with: [newHexiwearPeripheral])
             tableView.reloadData()
         }
     }
     
-    func centralManager(central: CBCentralManager, didConnectPeripheral peripheral: CBPeripheral) {
-
+    func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+        
         selectedPeripheral = peripheral
-
+        
         // If device is reconnected while on readings screen, just drop any checking
         guard navigationController?.topMostViewController() == self else {
-            progressHUD.dismiss()
+            progressHUD?.dismiss()
             hexiwearReconnection?.didReconnectPeripheral(peripheral)
             return
         }
-
+        
         // if user is logged in with demo account, skip cloud features (activation)
         guard userCredentials.isDemoUser() == false else {
             if self.isHEXIOTAP {
-                self.performSegueWithIdentifier("toOTAP", sender: self)
+                self.performSegue(withIdentifier: "toOTAP", sender: self)
             }
             else {
-                self.performSegueWithIdentifier("toHexiwearDeviceTable", sender: self)
+                self.performSegue(withIdentifier: "toHexiwearDeviceTable", sender: self)
             }
             return
         }
-
+        
         
         // Check device activation status...
         let serialMappings = getSerialMappings()
-
-        let hexiSerial = peripheral.identifier.UUIDString
+        
+        let hexiSerial = peripheral.identifier.uuidString
         
         // Activate device if there is no serial for selected hexiwear
         guard let wolkSerialForHexiSerial = device.findHexiAndWolkCombination(hexiSerial, hexiAndWolkSerials: serialMappings) else {
             self.dataStore.fetchAll(self.failureHandler) {
-                dispatch_async(dispatch_get_main_queue()) {
+                DispatchQueue.main.async {
                     // ... if it is not activated proceed to activation screen
-                    self.performSegueWithIdentifier("toActivateDevice", sender: self)
+                    self.performSegue(withIdentifier: "toActivateDevice", sender: self)
                 }
             }
             return
@@ -369,54 +387,54 @@ extension DetectHexiwearTableViewController: CBCentralManagerDelegate {
         // If cloud is OFF
         guard device.trackingIsOff == false else {
             if self.isHEXIOTAP {
-                self.performSegueWithIdentifier("toOTAP", sender: self)
+                self.performSegue(withIdentifier: "toOTAP", sender: self)
             }
             else {
-                self.performSegueWithIdentifier("toHexiwearDeviceTable", sender: self)
+                self.performSegue(withIdentifier: "toHexiwearDeviceTable", sender: self)
             }
             return
         }
         
         // If cloud is ON
         self.dataStore.getActivationStatusForSerial(wolkSerialForHexiSerial, onFailure: self.failureHandler) { activationStatus in
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async {
                 // ... if it is activated proceed to main screen
                 if activationStatus == "ACTIVATED" {
-                    dispatch_async(dispatch_get_main_queue()) {
+                    DispatchQueue.main.async {
                         if self.isHEXIOTAP {
-                            self.performSegueWithIdentifier("toOTAP", sender: self)
+                            self.performSegue(withIdentifier: "toOTAP", sender: self)
                         }
                         else {
-                            self.performSegueWithIdentifier("toHexiwearDeviceTable", sender: self)
+                            self.performSegue(withIdentifier: "toHexiwearDeviceTable", sender: self)
                         }
                     }
                     return
                 }
                 
                 self.dataStore.fetchAll(self.failureHandler) {
-                    dispatch_async(dispatch_get_main_queue()) {
+                    DispatchQueue.main.async {
                         // ... if it is not activated proceed to activation screen
-                        self.performSegueWithIdentifier("toActivateDevice", sender: self)
+                        self.performSegue(withIdentifier: "toActivateDevice", sender: self)
                     }
                 }
             }
         }
     }
     
-    func centralManager(central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: NSError?) {
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
         
         if let error = error { print("didDisconnectPeripheral error: \(error)") }
-
+        
         // If authentication is lost, drop readings processing
-        if let err = error where err.domain == CBErrorDomain {
-            let connectionFailedError: Int = CBError.ConnectionFailed.rawValue
-            if err.code == connectionFailedError {
+        if let err = error, err._domain == CBErrorDomain {
+            let connectionFailedError: Int = CBError.Code.connectionFailed.rawValue
+            if err._code == connectionFailedError {
                 print("connection failed")
             }
         }
-
+        
         guard !disconnectOnSignOut else { return }
-
+        
         if let _ = navigationController?.topMostViewController() as? FWUpgradeViewController {
             showSimpleAlertWithTitle(applicationTitle, message: "Hexiwear disconnected!", viewController: self, OKhandler: { _ in
                 self.navigationController?.popToViewController(self, animated: true)
@@ -429,12 +447,12 @@ extension DetectHexiwearTableViewController: CBCentralManagerDelegate {
         }
         else if navigationController?.topMostViewController() != self { // reconnect
             hexiwearReconnection?.didDisconnectPeripheral()
-            central.connectPeripheral(peripheral, options: nil)
+            central.connect(peripheral, options: nil)
         }
-
+        
     }
     
-    private func getSerialMappings() -> [SerialMapping] {
+    fileprivate func getSerialMappings() -> [SerialMapping] {
         let hexiAndWolkSerials = device.hexiAndWolkSerials
         
         let serialMappings = device.serialsStringToHexiAndWolkCombination(hexiAndWolkSerials)
@@ -445,12 +463,12 @@ extension DetectHexiwearTableViewController: CBCentralManagerDelegate {
 
 // MARK: - DeviceActivationDelegate
 extension DetectHexiwearTableViewController: DeviceActivationDelegate {
-    func didActivateDevice(pointId: Int, serials: SerialMapping) {
+    func didActivateDevice(_ pointId: Int, serials: SerialMapping) {
         print("DETECT HEXI -- didActivateDevice with serials: \(serials) and pointId: \(pointId)")
-
+        
         // Get hexi and wolk serial mappings
         let serialMappings = getSerialMappings()
-
+        
         // Filter out mapping new hexi serial (if there is one)
         var serialMappingsFiltered = serialMappings.filter { return $0.hexiSerial != serials.hexiSerial }
         
@@ -464,15 +482,15 @@ extension DetectHexiwearTableViewController: DeviceActivationDelegate {
     }
     
     func didSkipActivation() {
-        navigationController?.popViewControllerAnimated(true)
+        navigationController?.popViewController(animated: true)
         restartScanning()
     }
     
     func proceedToMainScreen() {
-        dispatch_async(dispatch_get_main_queue()) {
-            self.navigationController?.popViewControllerAnimated(false)
+        DispatchQueue.main.async {
+            self.navigationController?.popViewController(animated: false)
             let segueToPerform = self.isHEXIOTAP ? "toOTAP" : "toHexiwearDeviceTable"
-            self.performSegueWithIdentifier(segueToPerform, sender: self)
+            self.performSegue(withIdentifier: segueToPerform, sender: self)
         }
     }
     
@@ -497,9 +515,9 @@ extension DetectHexiwearTableViewController: HexiwearPeripheralDelegate {
     
     func didLoseBonding() {
         let message = "Lost bonding with HEXIWEAR. Click OK to open Bluetooth settings and choose forget HEXIWEAR and try again."
-
+        
         showOKAndCancelAlertWithTitle(applicationTitle, message: message, viewController: self, OKhandler: {_ in
-            UIApplication.sharedApplication().openURL(NSURL(string:UIApplicationOpenSettingsURLString)!);
+            UIApplication.shared.openURL(URL(string:UIApplicationOpenSettingsURLString)!);
         })
         if selectedPeripheral != nil {
             centralManager.cancelPeripheralConnection(selectedPeripheral)
@@ -521,9 +539,9 @@ extension DetectHexiwearTableViewController: HexiwearPeripheralDelegate {
             selectedPeripheral = nil
         }
         mqttAPI.setAuthorisationOptions("", password: "")
-        NSNotificationCenter.defaultCenter().postNotificationName(HexiwearDidSignOut, object: nil)
-
-    }    
+        NotificationCenter.default.post(name: Notification.Name(rawValue: HexiwearDidSignOut), object: nil)
+        
+    }
 }
 
 extension DetectHexiwearTableViewController: OTAPDelegate {
@@ -548,4 +566,3 @@ extension DetectHexiwearTableViewController : HexiwearSettingsDelegate {
         print("n/a")
     }
 }
-

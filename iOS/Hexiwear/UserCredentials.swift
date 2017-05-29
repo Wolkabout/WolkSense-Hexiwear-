@@ -25,54 +25,54 @@ import Foundation
 
 class UserCredentials {
     
-    let preferences = NSUserDefaults.standardUserDefaults()
-
-    var accessTokenExpires: NSDate? {
+    let preferences = UserDefaults.standard
+    
+    var accessTokenExpires: Date? {
         get {
-            let token = preferences.objectForKey("accessTokenExpires") as? NSDate
+            let token = preferences.object(forKey: "accessTokenExpires") as? Date
             return token
         }
         set (newToken) {
-            preferences.setObject(newToken, forKey: "accessTokenExpires")
+            preferences.set(newToken, forKey: "accessTokenExpires")
             preferences.synchronize()
         }
     }
     
     var accessToken: String? {
         get {
-            let token = preferences.objectForKey("accessToken") as? String
+            let token = preferences.object(forKey: "accessToken") as? String
             return token
         }
         set (newToken) {
-            preferences.setObject(newToken, forKey: "accessToken")
+            preferences.set(newToken, forKey: "accessToken")
             preferences.synchronize()
         }
     }
     
     var refreshToken: String? {
         get {
-            let token = preferences.objectForKey("refreshToken") as? String
+            let token = preferences.object(forKey: "refreshToken") as? String
             return token
         }
         set (newToken) {
-            preferences.setObject(newToken, forKey: "refreshToken")
+            preferences.set(newToken, forKey: "refreshToken")
             preferences.synchronize()
         }
     }
     
     var email: String? {
         get {
-            let email = preferences.objectForKey("email") as? String
+            let email = preferences.object(forKey: "email") as? String
             return email
         }
         set (newToken) {
-            preferences.setObject(newToken, forKey: "email")
+            preferences.set(newToken, forKey: "email")
             preferences.synchronize()
         }
     }
     
     func isDemoUser() -> Bool {
-        if let userEmail = self.email where userEmail == demoAccount {
+        if let userEmail = self.email, userEmail == demoAccount {
             return true
         }
         return false
@@ -86,18 +86,18 @@ class UserCredentials {
         preferences.synchronize()
     }
     
-    internal func storeCredentials(credentials: NSDictionary) {
+    internal func storeCredentials(_ credentials: NSDictionary) {
         if let accessToken = credentials["accessToken"] as? String,
-            accessTokenExpires = credentials["accessTokenExpires"] as? String,
-            refreshToken = credentials["refreshToken"] as? String,
-            email = credentials["email"] as? String {
-                print("store credentials accessToken: \(accessToken), email: \(email)")
-                self.accessToken = accessToken
-                let dateFormat = NSDateFormatter()
-                dateFormat.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
-                self.accessTokenExpires = dateFormat.dateFromString(accessTokenExpires)
-                self.refreshToken = refreshToken
-                self.email = email
+            let accessTokenExpires = credentials["accessTokenExpires"] as? String,
+            let refreshToken = credentials["refreshToken"] as? String,
+            let email = credentials["email"] as? String {
+            print("store credentials accessToken: \(accessToken), email: \(email)")
+            self.accessToken = accessToken
+            let dateFormat = DateFormatter()
+            dateFormat.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+            self.accessTokenExpires = dateFormat.date(from: accessTokenExpires)
+            self.refreshToken = refreshToken
+            self.email = email
         }
     }
 }

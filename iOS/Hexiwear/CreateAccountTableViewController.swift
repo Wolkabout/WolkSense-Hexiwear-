@@ -24,7 +24,7 @@
 import UIKit
 
 class CreateAccountTableViewController: UITableViewController {
-
+    
     @IBOutlet weak var firstName: UITextField!
     @IBOutlet weak var lastName: UITextField!
     @IBOutlet weak var email: UITextField!
@@ -47,7 +47,7 @@ class CreateAccountTableViewController: UITableViewController {
         email.delegate = self
         password.delegate = self
         confirmPassword.delegate = self
-        signUpButton.enabled = false
+        signUpButton.isEnabled = false
     }
     
     func didActivateSuccessfully() {
@@ -58,32 +58,32 @@ class CreateAccountTableViewController: UITableViewController {
         showSimpleAlertWithTitle(applicationTitle, message: "Activation failed.", viewController: self)
     }
     
-    @IBAction func cancel(sender: UIButton) {
-        self.dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func cancel(_ sender: UIButton) {
+        self.dismiss(animated: true, completion: nil)
     }
-
-    private func hideButtons() {
-        buttons.hidden = true
+    
+    fileprivate func hideButtons() {
+        buttons.isHidden = true
         activityIndicator.startAnimating()
     }
     
-    private func showButtons() {
-        buttons.hidden = false
+    fileprivate func showButtons() {
+        buttons.isHidden = false
         activityIndicator.stopAnimating()
     }
     
-    @IBAction func switchChanged(sender: UISwitch) {
-        signUpButton.enabled = policySwitch.on
+    @IBAction func switchChanged(_ sender: UISwitch) {
+        signUpButton.isEnabled = policySwitch.isOn
     }
     
     func checkAllFieldsSet() -> Bool {
-        guard let fn = firstName.text, ln = lastName.text, em = email.text, pass = password.text, conf = confirmPassword.text else {
+        guard let fn = firstName.text, let ln = lastName.text, let em = email.text, let pass = password.text, let conf = confirmPassword.text else {
             return false
         }
         return !fn.isEmpty && !ln.isEmpty && !em.isEmpty && !pass.isEmpty && !conf.isEmpty
     }
     
-    @IBAction func createAccount(sender: UIButton) {
+    @IBAction func createAccount(_ sender: UIButton) {
         hideButtons()
         
         if !checkAllFieldsSet() {
@@ -91,8 +91,8 @@ class CreateAccountTableViewController: UITableViewController {
             showButtons()
             return
         }
-
-        if let em = email.text where !isValidEmailAddress(em) {
+        
+        if let em = email.text, !isValidEmailAddress(em) {
             showSimpleAlertWithTitle(applicationTitle, message: "Invalid email!", viewController: self)
             showButtons()
             return
@@ -105,13 +105,13 @@ class CreateAccountTableViewController: UITableViewController {
             return
         }
         
-        guard let pass = password.text, conf = confirmPassword.text where (pass.characters.count >= 8) && (conf.characters.count >= 8)  else {
-            showSimpleAlertWithTitle(applicationTitle, message: "Password should be at least 8 characters long!", viewController: self)
+        guard let pass = password.text, let conf = confirmPassword.text, (pass.characters.count >= 8) && (conf.characters.count >= 8)  else {
+            showSimpleAlertWithTitle(applicationTitle, message: "Password must be at least 8 characters long!", viewController: self)
             showButtons()
             return
         }
-
-        if !policySwitch.on {
+        
+        if !policySwitch.isOn {
             showSimpleAlertWithTitle(applicationTitle, message: "Please agree with privacy policy and terms and conditions", viewController: self)
             showButtons()
             return
@@ -120,48 +120,62 @@ class CreateAccountTableViewController: UITableViewController {
         
         let account = Account(firstName: firstName.text ?? "", lastName: lastName.text ?? "", email: email.text ?? "", password: password.text ?? "")
         dataStore.signUpWithAccount(account,
-            onFailure: { _ in
-                dispatch_async(dispatch_get_main_queue()) {
-                    showSimpleAlertWithTitle(applicationTitle, message: "Error creating account!", viewController: self)
-                    self.showButtons()
-                }
-
-            },
-            onSuccess: {
-                dispatch_async(dispatch_get_main_queue()) {
-                    showSimpleAlertWithTitle(applicationTitle, message: "Thank you for signing up! A verification email has been sent to your email address. Please check your Inbox and follow the instructions.", viewController: self, OKhandler: { _ in
-                        self.dismissViewControllerAnimated(true, completion: nil) })
-                    self.userCredentials.email = self.email.text
-                    
-                }
-            }
-        )        
+                                    onFailure: handleSignupFail(reason:),
+                                    onSuccess: {
+                                        DispatchQueue.main.async {
+                                            showSimpleAlertWithTitle(applicationTitle, message: "Thank you for signing up! A verification email has been sent to your email address. Please check your Inbox and follow the instructions.", viewController: self, OKhandler: { _ in
+                                                self.dismiss(animated: true, completion: nil) })
+                                            self.userCredentials.email = self.email.text
+                                            
+                                        }
+        }
+        )
     }
     
-    override func tableView(tableView: UITableView, shouldHighlightRowAtIndexPath indexPath: NSIndexPath) -> Bool {
+    func handleSignupFail(reason: Reason) {
+        switch reason {
+        case .noSuccessStatusCode(let statusCode, let data):
+            guard !(statusCode == BAD_REQUEST && data?.contains("USER_EMAIL_IS_NOT_UNIQUE") ?? false) else {
+                DispatchQueue.main.async {
+                    showSimpleAlertWithTitle(applicationTitle, message: "Account with provided email address already exists.", viewController: self)
+                    self.showButtons()
+                }
+                return
+            }
+            
+            fallthrough
+        default:
+            DispatchQueue.main.async {
+                showSimpleAlertWithTitle(applicationTitle, message: "There was a problem creating your account. Please try again or contact our support.", viewController: self)
+                self.showButtons()
+            }
+        }
+    }
+    
+    override func tableView(_ tableView: UITableView, shouldHighlightRowAt indexPath: IndexPath) -> Bool {
         return false
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toTerms" {
-            if let vc = segue.destinationViewController as? BaseNavigationController,
-                termsVC = vc.topViewController as? StaticViewController {
-                    termsVC.staticDelegate = self
-                    termsVC.url = NSURL(string: termsAndConditionsURL)
+            if let vc = segue.destination as? BaseNavigationController,
+                let termsVC = vc.topViewController as? StaticViewController {
+                termsVC.staticDelegate = self
+                termsVC.url = URL(string: termsAndConditionsURL)
             }
         }
         else if segue.identifier == "toPolicy" {
-            if let vc = segue.destinationViewController as? BaseNavigationController,
-                termsVC = vc.topViewController as? StaticViewController {
-                    termsVC.staticDelegate = self
-                    termsVC.url = NSURL(string: privacyPolicyURL)
+            if let vc = segue.destination as? BaseNavigationController,
+                let termsVC = vc.topViewController as? StaticViewController {
+                termsVC.staticDelegate = self
+                termsVC.url = URL(string: privacyPolicyURL)
             }
         }
     }
 }
 
 extension CreateAccountTableViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField == firstName {
             lastName.becomeFirstResponder()
             return true
@@ -185,12 +199,11 @@ extension CreateAccountTableViewController: UITextFieldDelegate {
         textField.resignFirstResponder()
         return true
     }
-
+    
 }
 
 extension CreateAccountTableViewController: StaticViewDelegate {
     func willClose() {
-        dismissViewControllerAnimated(true, completion: nil)
+        dismiss(animated: true, completion: nil)
     }
 }
-

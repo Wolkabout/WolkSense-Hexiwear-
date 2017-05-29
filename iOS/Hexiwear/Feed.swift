@@ -79,19 +79,19 @@ struct Feed  {
         self.alarmLowEnabled = alarmLowEnabled
     }
     
-    static func parseFeedJSON(feedJson: [String:AnyObject], device: Device) -> Feed? {
+    static func parseFeedJSON(_ feedJson: [String:AnyObject], device: Device) -> Feed? {
         if let id = feedJson["id"] as? Int,
-            readingType = feedJson["readingType"] as? String,
-            currentValue = feedJson["currentValue"] as? String,
-            trend = feedJson["trend"] as? String,
-            enabled = feedJson["enabled"] as? Bool,
-            order = feedJson["order"] as? Int,
-            alarmState = feedJson["alarmState"] as? String,
-            alarmHigh = feedJson["alarmHigh"] as? String,
-            alarmHighEnabled = feedJson["alarmHighEnabled"] as? Bool,
-            alarmLow = feedJson["alarmLow"] as? String,
-            alarmLowEnabled = feedJson["alarmLowEnabled"] as? Bool {
-                return Feed(device: device, id: id, readingType: readingType, currentValue: currentValue, trend: trend, enabled: enabled, order: order, alarmState: alarmState, alarmHigh: alarmHigh, alarmHighEnabled: alarmHighEnabled, alarmLow: alarmLow, alarmLowEnabled: alarmLowEnabled)
+            let readingType = feedJson["readingType"] as? String,
+            let currentValue = feedJson["currentValue"] as? String,
+            let trend = feedJson["trend"] as? String,
+            let enabled = feedJson["enabled"] as? Bool,
+            let order = feedJson["order"] as? Int,
+            let alarmState = feedJson["alarmState"] as? String,
+            let alarmHigh = feedJson["alarmHigh"] as? String,
+            let alarmHighEnabled = feedJson["alarmHighEnabled"] as? Bool,
+            let alarmLow = feedJson["alarmLow"] as? String,
+            let alarmLowEnabled = feedJson["alarmLowEnabled"] as? Bool {
+            return Feed(device: device, id: id, readingType: readingType, currentValue: currentValue, trend: trend, enabled: enabled, order: order, alarmState: alarmState, alarmHigh: alarmHigh, alarmHighEnabled: alarmHighEnabled, alarmLow: alarmLow, alarmLowEnabled: alarmLowEnabled)
         }
         
         return nil

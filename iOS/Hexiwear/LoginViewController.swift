@@ -39,7 +39,7 @@ class LoginViewController: UIViewController {
     var dataStore: DataStore!
     var device: TrackingDevice!
     var mqttAPI: MQTTAPI!
-
+    
     var isAlreadyPresented = false
     
     
@@ -60,62 +60,62 @@ class LoginViewController: UIViewController {
     //MARK:- Other methods
     override func viewDidLoad() {
         // Init properties
-        let appDelegate = UIApplication.sharedApplication().delegate as! AppDelegate
+        let appDelegate = UIApplication.shared.delegate as! AppDelegate
         
         userCredentials = appDelegate.userCredentials
         device = appDelegate.device
         dataStore = appDelegate.dataStore
         mqttAPI = appDelegate.mqttAPI
-
+        
         username.delegate = self
         userPassword.delegate = self
         
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(LoginViewController.didSignOut), name: HexiwearDidSignOut, object: nil)
-
+        NotificationCenter.default.addObserver(self, selector: #selector(LoginViewController.didSignOut), name: NSNotification.Name(rawValue: HexiwearDidSignOut), object: nil)
+        
         let tapBackground = UITapGestureRecognizer(target: self, action: #selector(LoginViewController.resignLogin))
         tapBackground.numberOfTapsRequired = 1
         view.addGestureRecognizer(tapBackground)
         
-        let scrollContentSize = CGSizeMake(320, 345);
+        let scrollContentSize = CGSize(width: 320, height: 345);
         self.scrollView.contentSize = scrollContentSize;
     }
     
-
+    
     func resignLogin() {
         view.endEditing(true)
     }
     
-    func keyboardWillShow(n: NSNotification) {
+    func keyboardWillShow(_ n: Notification) {
         if let userInfo = n.userInfo {
-            if let keyboardSize = userInfo[UIKeyboardFrameBeginUserInfoKey]?.CGRectValue.size {
+            if let keyboardSize = (userInfo[UIKeyboardFrameBeginUserInfoKey] as AnyObject).cgRectValue {
                 let contentInsets = UIEdgeInsetsMake(-100.0, 0.0, keyboardSize.height, 0.0)
                 scrollView.contentInset = contentInsets
                 scrollView.scrollIndicatorInsets = contentInsets
             }
         }
     }
-
-    func keyboardWillHide(n: NSNotification) {
-        let contentInsets = UIEdgeInsetsZero;
+    
+    func keyboardWillHide(_ n: Notification) {
+        let contentInsets = UIEdgeInsets.zero;
         scrollView.contentInset = contentInsets;
         scrollView.scrollIndicatorInsets = contentInsets;
     }
     
     func didSignOut() {
-        dispatch_async(dispatch_get_main_queue()) {
+        DispatchQueue.main.async {
             self.userCredentials.clearCredentials()
             self.dataStore.clearDataStore()
             self.isAlreadyPresented = false
             self.showSignIn()
-            self.presentedViewController?.dismissViewControllerAnimated(false, completion: nil)
-            self.presentedViewController?.dismissViewControllerAnimated(true, completion: nil)
+            self.presentedViewController?.dismiss(animated: false, completion: nil)
+            self.presentedViewController?.dismiss(animated: true, completion: nil)
         }
     }
-
-    override func viewWillAppear(animated: Bool) {
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(LoginViewController.keyboardWillShow(_:)), name: UIKeyboardWillShowNotification, object: self.view.window)
-        NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(LoginViewController.keyboardWillHide(_:)), name: UIKeyboardWillHideNotification, object: self.view.window)
-
+    
+    override func viewWillAppear(_ animated: Bool) {
+        NotificationCenter.default.addObserver(self, selector: #selector(LoginViewController.keyboardWillShow(_:)), name: NSNotification.Name.UIKeyboardWillShow, object: self.view.window)
+        NotificationCenter.default.addObserver(self, selector: #selector(LoginViewController.keyboardWillHide(_:)), name: NSNotification.Name.UIKeyboardWillHide, object: self.view.window)
+        
         self.view.endEditing(true)
         self.username.text = userCredentials.email ?? ""
         if self.username.text == demoAccount {
@@ -124,7 +124,7 @@ class LoginViewController: UIViewController {
         self.userPassword.text = ""
         
         setTrackingDeviceOwner()
-
+        
         if isAlreadyPresented { return }
         isAlreadyPresented = true
         
@@ -137,22 +137,22 @@ class LoginViewController: UIViewController {
         }
     }
     
-    override func viewWillDisappear(animated: Bool) {
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillShowNotification, object: nil)
-        NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillHideNotification, object: nil)
+    override func viewWillDisappear(_ animated: Bool) {
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillHide, object: nil)
     }
     
-    override func viewDidAppear(animated: Bool) {
+    override func viewDidAppear(_ animated: Bool) {
         self.view.endEditing(true)
     }
     
-//MARK: - Actions
-    @IBAction func signIn(sender: UIButton) {
-        UIView.transitionFromView(signInElementsView, toView: signInProgressView, duration: 0.5, options: .ShowHideTransitionViews, completion: nil)
+    //MARK: - Actions
+    @IBAction func signIn(_ sender: UIButton) {
+        UIView.transition(from: signInElementsView, to: signInProgressView, duration: 0.5, options: .showHideTransitionViews, completion: nil)
         showSigningIn()
-
+        
         // if user is logging with demo account, skip cloud connection
-        guard let usr = username.text, pass = userPassword.text where usr != demoAccount || pass != demoAccount else {
+        guard let usr = username.text, let pass = userPassword.text, usr != demoAccount || pass != demoAccount else {
             userCredentials.clearCredentials()
             userCredentials.email = demoAccount
             detectHexiwear()
@@ -160,56 +160,57 @@ class LoginViewController: UIViewController {
         }
         
         dataStore.signInWithUsername(username.text ?? "", password: userPassword.text ?? "",
-            onFailure: { reason in
-                switch reason {
-                case .AccessTokenExpired:
-                    dispatch_async(dispatch_get_main_queue()) {
-                        showSimpleAlertWithTitle(applicationTitle, message: "Email/password authentication failed. Please try again.", viewController: self)
-                        self.showSignIn()
-                    }
-                case .NoSuccessStatusCode(let statusCode):
-                    if statusCode == FORBIDDEN || statusCode == NOT_AUTHORIZED {
-                        dispatch_async(dispatch_get_main_queue()) {
-                            showSimpleAlertWithTitle(applicationTitle, message: "Sign in failed. Email/password not recognized.", viewController: self)
-                            self.showSignIn()
-                        }
-                    }
-                default:
-                    dispatch_async(dispatch_get_main_queue()) {
-                        self.showConnectivityProblem()
-                    }
-                }
-                
-            },
-            onSuccess: {
-                if self.userCredentials.accessToken != nil && !self.userCredentials.accessToken!.isEmpty {
-                    self.fetchDataAndProceedToDetectionScreen()
-                }
-            }
+                                     onFailure: handleLoginFailure(reason:),
+                                     onSuccess: {
+                                        if self.userCredentials.accessToken != nil && !self.userCredentials.accessToken!.isEmpty {
+                                            self.fetchDataAndProceedToDetectionScreen()
+                                        }
+        }
         )
     }
     
-    @IBAction func tryLoginAgain(sender: UIButton) {
+    
+    func handleLoginFailure(reason: Reason) {
+        switch reason {
+        case .noSuccessStatusCode(let statusCode, _):
+            guard statusCode != NOT_AUTHORIZED else {
+                DispatchQueue.main.async {
+                    showSimpleAlertWithTitle(applicationTitle, message: "The email address or password you entered did not match our records. Please enter valid credentials.", viewController: self)
+                    self.showSignIn()
+                }
+                return
+            }
+            
+            fallthrough
+        default:
+            DispatchQueue.main.async {
+                showSimpleAlertWithTitle(applicationTitle, message: "There was a problem signing you in. Please try again or contact our support.", viewController: self)
+                self.showSignIn()
+            }
+        }
+    }
+    
+    @IBAction func tryLoginAgain(_ sender: UIButton) {
         showSigningIn()
         fetchDataAndProceedToDetectionScreen()
     }
     
-    func loginFailureHandler(failureReason: Reason) {
+    func loginFailureHandler(_ failureReason: Reason) {
         switch failureReason {
-        case .AccessTokenExpired, .NoSuccessStatusCode(_):
-            dispatch_async(dispatch_get_main_queue()) { [unowned self] in self.showSignIn() }
-        case .Other(let err):
+        case .accessTokenExpired, .noSuccessStatusCode(_):
+            DispatchQueue.main.async { [unowned self] in self.showSignIn() }
+        case .other(let err):
             print("Other error \(err.description)")
         default:
-            dispatch_async(dispatch_get_main_queue()) { [unowned self] in self.showConnectivityProblem() }
+            DispatchQueue.main.async { [unowned self] in self.showConnectivityProblem() }
         }
     }
-
-    private func fetchDataAndProceedToDetectionScreen() {
+    
+    fileprivate func fetchDataAndProceedToDetectionScreen() {
         showSigningIn()
         
-        if !indicatorView.isAnimating() {
-            dispatch_async(dispatch_get_main_queue()) { self.indicatorView.startAnimating() }
+        if !indicatorView.isAnimating {
+            DispatchQueue.main.async { self.indicatorView.startAnimating() }
         }
         
         // Connect currently logged in user with the device
@@ -221,35 +222,35 @@ class LoginViewController: UIViewController {
         }
     }
     
-    private func detectHexiwear() {
-        dispatch_async(dispatch_get_main_queue()) {
-            self.performSegueWithIdentifier("toDetectHexiwear", sender: self)
+    fileprivate func detectHexiwear() {
+        DispatchQueue.main.async {
+            self.performSegue(withIdentifier: "toDetectHexiwear", sender: self)
         }
     }
     
-    private func showSignIn() {
+    fileprivate func showSignIn() {
         indicatorView.stopAnimating()
-        signInProgressView.hidden = true
-        signInElementsView.hidden = false
-        connectivityProblemView.hidden = true
-        forgotPasswordAndSignup.hidden = false
+        signInProgressView.isHidden = true
+        signInElementsView.isHidden = false
+        connectivityProblemView.isHidden = true
+        forgotPasswordAndSignup.isHidden = false
         username.becomeFirstResponder()
     }
-
-    private func showSigningIn() {
-        signInProgressView.hidden = false
-        signInElementsView.hidden = true
-        connectivityProblemView.hidden = true
-        forgotPasswordAndSignup.hidden = true
+    
+    fileprivate func showSigningIn() {
+        signInProgressView.isHidden = false
+        signInElementsView.isHidden = true
+        connectivityProblemView.isHidden = true
+        forgotPasswordAndSignup.isHidden = true
         indicatorView.startAnimating()
     }
     
-    private func showConnectivityProblem() {
+    fileprivate func showConnectivityProblem() {
         indicatorView.stopAnimating()
-        signInProgressView.hidden = true
-        signInElementsView.hidden = true
-        forgotPasswordAndSignup.hidden = true
-        connectivityProblemView.hidden = false
+        signInProgressView.isHidden = true
+        signInElementsView.isHidden = true
+        forgotPasswordAndSignup.isHidden = true
+        connectivityProblemView.isHidden = false
     }
     
     func setTrackingDeviceOwner() {
@@ -257,16 +258,16 @@ class LoginViewController: UIViewController {
         self.device.userAccount = userAccount
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Link device with the currnet loged in user (on the client side)
         setTrackingDeviceOwner()
-
+        
         if segue.identifier == "toDetectHexiwear" {
-            NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillShowNotification, object: nil)
-            NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillHideNotification, object: nil)
-
-            if let vc = segue.destinationViewController as? BaseNavigationController,
-                detectHexiwearTableViewController = vc.topViewController as? DetectHexiwearTableViewController {
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+            
+            if let vc = segue.destination as? BaseNavigationController,
+                let detectHexiwearTableViewController = vc.topViewController as? DetectHexiwearTableViewController {
                 detectHexiwearTableViewController.dataStore = self.dataStore
                 detectHexiwearTableViewController.userCredentials = self.userCredentials
                 detectHexiwearTableViewController.device = self.device
@@ -274,22 +275,22 @@ class LoginViewController: UIViewController {
             }
         }
         else if segue.identifier == "toSignUp" {
-            NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillShowNotification, object: nil)
-            NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillHideNotification, object: nil)
-
-            if let vc = segue.destinationViewController as? CreateAccountTableViewController {
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+            
+            if let vc = segue.destination as? CreateAccountTableViewController {
                 vc.dataStore = self.dataStore
                 vc.userCredentials = self.userCredentials
             }
         }
         else if segue.identifier == "toForgotPassword" {
-            NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillShowNotification, object: nil)
-            NSNotificationCenter.defaultCenter().removeObserver(self, name: UIKeyboardWillHideNotification, object: nil)
-
-            if let vc = segue.destinationViewController as? BaseNavigationController,
-                fpc = vc.topViewController as? ForgotPasswordViewController {
-                    fpc.dataStore = self.dataStore
-                    fpc.forgotPasswordDelegate = self
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillShow, object: nil)
+            NotificationCenter.default.removeObserver(self, name: NSNotification.Name.UIKeyboardWillHide, object: nil)
+            
+            if let vc = segue.destination as? BaseNavigationController,
+                let fpc = vc.topViewController as? ForgotPasswordViewController {
+                fpc.dataStore = self.dataStore
+                fpc.forgotPasswordDelegate = self
             }
         }
     }
@@ -297,12 +298,12 @@ class LoginViewController: UIViewController {
 
 // MARK: - UITextFieldDelegate
 extension LoginViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField == username {
             userPassword.becomeFirstResponder()
             return true
         }
-
+        
         textField.resignFirstResponder()
         signIn(UIButton())
         return true
@@ -312,6 +313,6 @@ extension LoginViewController: UITextFieldDelegate {
 // MARK: - ForgotPasswordDelegate
 extension LoginViewController: ForgotPasswordDelegate {
     func didFinishResettingPassword() {
-        presentedViewController?.dismissViewControllerAnimated(true, completion: nil)
+        presentedViewController?.dismiss(animated: true, completion: nil)
     }
 }

@@ -37,23 +37,23 @@ class MQTTAPI {
     
     let MQTThost = "wolksense.com"
     let MQTTport: UInt16 = 8883
-    var MQTTQoS: CocoaMQTTQOS = .QOS0
+    var MQTTQoS: CocoaMQTTQOS = .qos0
     
     //MARK: - Properties
-    lazy var mqttRequestQueue: NSOperationQueue = {
-        var queue = NSOperationQueue()
+    lazy var mqttRequestQueue: OperationQueue = {
+        var queue = OperationQueue()
         queue.name = "com.wolkabout.Hexiwear.mqttApiQueue"
         queue.maxConcurrentOperationCount = 1 // just one running request allowed
         return queue
     }() // used to start and cancel mqtt client
     
-    private var subscribeTopic: String {
+    fileprivate var subscribeTopic: String {
         get {
             return "config/\(serial)"
         }
     }
     
-    private var publishTopic: String {
+    fileprivate var publishTopic: String {
         get {
             return "sensors/\(serial)"
         }
@@ -64,7 +64,7 @@ class MQTTAPI {
     
     
     //MARK: - Methods
-    init(delegate: MQTTAPIProtocol? = nil, QoS: CocoaMQTTQOS = .QOS0) {
+    init(delegate: MQTTAPIProtocol? = nil, QoS: CocoaMQTTQOS = .qos0) {
         self.mqttDelegate = delegate
         self.MQTTQoS = QoS
         
@@ -76,7 +76,7 @@ class MQTTAPI {
         }
     }
     
-    func setAuthorisationOptions(username: String, password: String) {
+    func setAuthorisationOptions(_ username: String, password: String) {
         guard mqttClient != nil else { return }
         
         mqttClient.username = username
@@ -84,15 +84,15 @@ class MQTTAPI {
         print("MQTT -- user:\(username) pass:\(password)")
     }
     
-    private func signalResponseReceived() {
+    fileprivate func signalResponseReceived() {
         self.responseSemaphore.lock()
         self.responseReceived = true
         self.responseSemaphore.signal()
         self.responseSemaphore.unlock()
     }
     
-    private func tryDisconnect() {
-        if mqttClient != nil && mqttClient.connState == .CONNECTED {
+    fileprivate func tryDisconnect() {
+        if mqttClient != nil && mqttClient.connState == .connected {
             mqttClient.disconnect()
         }
     }
@@ -100,48 +100,48 @@ class MQTTAPI {
 }
 
 extension MQTTAPI: CocoaMQTTDelegate {
-    func mqtt(mqtt: CocoaMQTT, didConnect host: String, port: Int) {
+    func mqtt(_ mqtt: CocoaMQTT, didConnect host: String, port: Int) {
         print("MQTT -- didConnect \(host):\(port)")
     }
     
-    func mqtt(mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
-        if ack == .ACCEPT {
+    func mqtt(_ mqtt: CocoaMQTT, didConnectAck ack: CocoaMQTTConnAck) {
+        if ack == .accept {
             self.mqttClient.publish(self.publishTopic, withString: mqttPayload, qos: self.MQTTQoS, retain: false, dup: false)
             return
         }
         
     }
     
-    func mqtt(mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
-        print("MQTT -- didPublishMessage with id: \(id) and message: \(message.string)")
+    func mqtt(_ mqtt: CocoaMQTT, didPublishMessage message: CocoaMQTTMessage, id: UInt16) {
+        print("MQTT -- didPublishMessage with id: \(id) and message: \(String(describing: message.string))")
         tryDisconnect()
     }
     
-    func mqtt(mqtt: CocoaMQTT, didPublishAck id: UInt16) {
+    func mqtt(_ mqtt: CocoaMQTT, didPublishAck id: UInt16) {
         print("MQTT -- didPublishAck with id: \(id)")
     }
     
-    func mqtt(mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16 ) {
-        print("MQTT -- didReceivedMessage: \(message.string) with id \(id)")
+    func mqtt(_ mqtt: CocoaMQTT, didReceiveMessage message: CocoaMQTTMessage, id: UInt16 ) {
+        print("MQTT -- didReceivedMessage: \(String(describing: message.string)) with id \(id)")
     }
     
-    func mqtt(mqtt: CocoaMQTT, didSubscribeTopic topic: String) {
+    func mqtt(_ mqtt: CocoaMQTT, didSubscribeTopic topic: String) {
         print("MQTT -- didSubscribeTopic to \(topic)")
     }
     
-    func mqtt(mqtt: CocoaMQTT, didUnsubscribeTopic topic: String) {
+    func mqtt(_ mqtt: CocoaMQTT, didUnsubscribeTopic topic: String) {
         print("MQTT -- didUnsubscribeTopic to \(topic)")
     }
     
-    func mqttDidPing(mqtt: CocoaMQTT) {
+    func mqttDidPing(_ mqtt: CocoaMQTT) {
         print("MQTT -- didPing")
     }
     
-    func mqttDidReceivePong(mqtt: CocoaMQTT) {
+    func mqttDidReceivePong(_ mqtt: CocoaMQTT) {
         print("MQTT -- didReceivePong")
     }
     
-    func mqttDidDisconnect(mqtt: CocoaMQTT, withError err: NSError?) {
+    func mqttDidDisconnect(_ mqtt: CocoaMQTT, withError err: NSError?) {
         if let error = err { print("MQTT -- didDisconnect with error: \(error)") }
         
         signalResponseReceived()
@@ -153,7 +153,7 @@ extension MQTTAPI: CocoaMQTTDelegate {
 
 extension MQTTAPI {
     
-    func publishHexiwearReadings(readings: HexiwearReadings, forSerial: String) {
+    func publishHexiwearReadings(_ readings: HexiwearReadings, forSerial: String) {
         guard mqttRequestQueue.operationCount == 0 else {
             print("MQTT -- DROPPED PUBLISH as ALREADY one is RUNNING!!!!!")
             return
@@ -168,10 +168,10 @@ extension MQTTAPI {
         mqttRequestQueue.addOperation(publish)
     }
     
-    class PublishReadings: NSOperation {
-        private unowned let trackingAPI: MQTTAPI
-        private let mqttPayload: String
-        private let serial: String
+    class PublishReadings: Operation {
+        fileprivate unowned let trackingAPI: MQTTAPI
+        fileprivate let mqttPayload: String
+        fileprivate let serial: String
         
         init (trackingAPI: MQTTAPI, mqttPayload: String, serial: String) {
             self.trackingAPI = trackingAPI
@@ -180,7 +180,7 @@ extension MQTTAPI {
         }
         
         override func main() {
-            if self.cancelled {
+            if self.isCancelled {
                 print("MQTT -- Cancelled publish locations")
                 return
             }

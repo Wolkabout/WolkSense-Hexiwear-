@@ -23,6 +23,7 @@
 
 import UIKit
 import CoreBluetooth
+import JGProgressHUD
 
 protocol HexiwearPeripheralDelegate {
     func didUnwind()
@@ -32,11 +33,11 @@ protocol HexiwearPeripheralDelegate {
 
 protocol HexiwearTimeSettingDelegate {
     func didStartSettingTime()
-    func didFinishSettingTime(success: Bool)
+    func didFinishSettingTime(_ success: Bool)
 }
 
 class HexiwearTableViewController: UITableViewController {
-
+    
     @IBOutlet weak var modeCell: WeatherTableViewCell!
     @IBOutlet weak var disconnectedCell: WeatherTableViewCell!
     @IBOutlet weak var batteryCell: WeatherTableViewCell!
@@ -52,7 +53,7 @@ class HexiwearTableViewController: UITableViewController {
     @IBOutlet weak var lightCell: WeatherTableViewCell!
     
     var dataStore: DataStore!
-
+    
     // BLE
     var hexiwearPeripheral : CBPeripheral!
     var hexiwearReadings = HexiwearReadings()
@@ -80,12 +81,12 @@ class HexiwearTableViewController: UITableViewController {
     
     var alertInCharacteristic: CBCharacteristic?
     
-    var readTimer: NSTimer!
+    var readTimer: Timer!
     var isBatteryRead = false
     var shouldPublishToMQTT = false
-
+    
     var isDemoAccount = true
-
+    
     // OTAP vars
     var isOTAPEnabled         = false // if hexiware is in OTAP mode this will be true
     
@@ -118,36 +119,37 @@ class HexiwearTableViewController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        self.tableView.tableFooterView = UIView()
+        
         // Know when MQTT has published data
         mqttAPI.setAuthorisationOptions(wolkSerialForHexiserial ?? "", password: wolkPasswordForHexiserial ?? "")
         mqttAPI.mqttDelegate = self
         
         // Setup polling timer
-        readTimer = NSTimer.scheduledTimerWithTimeInterval(0.5, target: self, selector: #selector(HexiwearTableViewController.readCharacteristics), userInfo: nil, repeats: true)
+        readTimer = Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(HexiwearTableViewController.readCharacteristics), userInfo: nil, repeats: true)
     }
     
-    override func viewWillAppear(animated: Bool) {
-        batteryIsOn = !trackingDevice.isBatteryOff ?? true
-        temperatureIsOn = !trackingDevice.isTemperatureOff ?? true
-        humidityIsOn = !trackingDevice.isHumidityOff ?? true
-        pressureIsOn = !trackingDevice.isPressureOff ?? true
-        lightIsOn = !trackingDevice.isLightOff ?? true
-        acceleratorIsOn = !trackingDevice.isAcceleratorOff ?? true
-        magnetometerIsOn = !trackingDevice.isMagnetometerOff ?? true
-        gyroIsOn = !trackingDevice.isGyroOff ?? true
-        stepsIsOn = !trackingDevice.isStepsOff ?? true
-        caloriesIsOn = !trackingDevice.isCaloriesOff ?? true
-        heartrateIsOn = !trackingDevice.isHeartRateOff ?? true
-        sendToCloudIsOn = !trackingDevice.trackingIsOff ?? true
-
+    override func viewWillAppear(_ animated: Bool) {
+        batteryIsOn = !trackingDevice.isBatteryOff
+        temperatureIsOn = !trackingDevice.isTemperatureOff
+        humidityIsOn = !trackingDevice.isHumidityOff
+        pressureIsOn = !trackingDevice.isPressureOff
+        lightIsOn = !trackingDevice.isLightOff
+        acceleratorIsOn = !trackingDevice.isAcceleratorOff
+        magnetometerIsOn = !trackingDevice.isMagnetometerOff
+        gyroIsOn = !trackingDevice.isGyroOff
+        stepsIsOn = !trackingDevice.isStepsOff
+        caloriesIsOn = !trackingDevice.isCaloriesOff
+        heartrateIsOn = !trackingDevice.isHeartRateOff
+        sendToCloudIsOn = !trackingDevice.trackingIsOff
+        
         tableView.reloadData()
         
         // Discover hexiwear services
         discoverHexiwearServices()
     }
     
-    private func discoverHexiwearServices() {
+    fileprivate func discoverHexiwearServices() {
         if shouldDiscoverServices && hexiwearPeripheral != nil {
             hexiwearPeripheral.delegate = self
             hexiwearPeripheral.discoverServices(nil)
@@ -155,79 +157,79 @@ class HexiwearTableViewController: UITableViewController {
         }
     }
     
-    override func viewWillDisappear(animated: Bool) {
-        if isMovingFromParentViewController() {
+    override func viewWillDisappear(_ animated: Bool) {
+        if isMovingFromParentViewController {
             stopTheTimer()
             hexiwearDelegate?.didUnwind()
         }
     }
     
-    private func stopTheTimer() {
-        readTimer.invalidate()
+    fileprivate func stopTheTimer() {
+        readTimer?.invalidate()
         readTimer = nil
     }
-
-    @IBAction func goToSettings(sender: UIBarButtonItem) {
-        performSegueWithIdentifier("toSettings", sender: nil)
+    
+    @IBAction func goToSettings(_ sender: UIBarButtonItem) {
+        performSegue(withIdentifier: "toSettings", sender: nil)
     }
-
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toSettings" {
-            if let nc = segue.destinationViewController as? BaseNavigationController,
-                vc = nc.topViewController as? HexiSettingsTableViewController {
-                    vc.title = "Hexiwear settings"
-                    vc.dataStore = self.dataStore
-                    vc.trackingDevice = self.trackingDevice
-                    vc.deviceInfo = self.deviceInfo
-                    vc.hexiwearMode = self.hexiwearReadings.hexiwearMode
-                    vc.delegate = self
-                    self.timeSettingDelegate = vc
+            if let nc = segue.destination as? BaseNavigationController,
+                let vc = nc.topViewController as? HexiSettingsTableViewController {
+                vc.title = "Hexiwear settings"
+                vc.dataStore = self.dataStore
+                vc.trackingDevice = self.trackingDevice
+                vc.deviceInfo = self.deviceInfo
+                vc.hexiwearMode = self.hexiwearReadings.hexiwearMode
+                vc.delegate = self
+                self.timeSettingDelegate = vc
             }
         }
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         let cellRow = indexPath.row
         let cellHeight: CGFloat = 160.0
         
         if cellRow == 0 { // mode cell
-            return isConnected && hexiwearReadings.hexiwearMode == .IDLE ? cellHeight : 0.0
+            return isConnected && hexiwearReadings.hexiwearMode == .idle ? cellHeight : 0.0
         }
         else if cellRow == 1 { // disconnectedCell
             return isConnected == false ? cellHeight : 0.0
         }
         else if cellRow == 2 { // battery
-            return isConnected && batteryIsOn && availableReadings.contains(.BATTERY) ? cellHeight : 0.0
+            return isConnected && batteryIsOn && availableReadings.contains(.battery) ? cellHeight : 0.0
         }
         else if cellRow == 3 { // temperature
-            return isConnected && temperatureIsOn && availableReadings.contains(.TEMPERATURE) ? cellHeight : 0.0
+            return isConnected && temperatureIsOn && availableReadings.contains(.temperature) ? cellHeight : 0.0
         }
         else if cellRow == 4 { // humidity
-            return isConnected && humidityIsOn && availableReadings.contains(.HUMIDITY) ? cellHeight : 0.0
+            return isConnected && humidityIsOn && availableReadings.contains(.humidity) ? cellHeight : 0.0
         }
         else if cellRow == 5 { // pressure
-            return isConnected && pressureIsOn && availableReadings.contains(.PRESSURE) ? cellHeight : 0.0
+            return isConnected && pressureIsOn && availableReadings.contains(.pressure) ? cellHeight : 0.0
         }
         else if cellRow == 6 { // light
-            return isConnected && lightIsOn && availableReadings.contains(.LIGHT) ? cellHeight : 0.0
+            return isConnected && lightIsOn && availableReadings.contains(.light) ? cellHeight : 0.0
         }
         else if cellRow == 7 { // accel
-            return isConnected && acceleratorIsOn && availableReadings.contains(.ACCELEROMETER) ? cellHeight : 0.0
+            return isConnected && acceleratorIsOn && availableReadings.contains(.accelerometer) ? cellHeight : 0.0
         }
         else if cellRow == 8 { // magnet
-            return isConnected && magnetometerIsOn && availableReadings.contains(.MAGNETOMETER) ? cellHeight : 0.0
+            return isConnected && magnetometerIsOn && availableReadings.contains(.magnetometer) ? cellHeight : 0.0
         }
         else if cellRow == 9 { // gyro
-            return isConnected && gyroIsOn && availableReadings.contains(.GYRO) ? cellHeight : 0.0
+            return isConnected && gyroIsOn && availableReadings.contains(.gyro) ? cellHeight : 0.0
         }
         else if cellRow == 10 { // steps
-            return isConnected && stepsIsOn && availableReadings.contains(.PEDOMETER) ? cellHeight : 0.0
+            return isConnected && stepsIsOn && availableReadings.contains(.pedometer) ? cellHeight : 0.0
         }
         else if cellRow == 11 { // calories
-            return isConnected && caloriesIsOn && availableReadings.contains(.CALORIES) ? cellHeight : 0.0
+            return isConnected && caloriesIsOn && availableReadings.contains(.calories) ? cellHeight : 0.0
         }
         else { // heartrate
-            return isConnected && heartrateIsOn && availableReadings.contains(.HEARTRATE) ? cellHeight : 0.0
+            return isConnected && heartrateIsOn && availableReadings.contains(.heartrate) ? cellHeight : 0.0
         }
     }
 }
@@ -235,159 +237,159 @@ class HexiwearTableViewController: UITableViewController {
 //MARK:- CBPeripheralDelegate
 extension HexiwearTableViewController: CBPeripheralDelegate {
     
-    func peripheral(peripheral: CBPeripheral, didDiscoverServices error: NSError?) {
-        guard error == Optional.None else {
-            print("didDiscoverServices error: \(error)")
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+        guard error == nil else {
+            print("didDiscoverServices error: \(String(describing: error))")
             return
         }
-
+        
         guard let services = peripheral.services else { return }
         
-        let progressHUD = JGProgressHUD(style: .Dark)
-        progressHUD.textLabel.text = "Exploring services..."
-        progressHUD.showInView(self.view, animated: true)
-
+        let progressHUD = JGProgressHUD(style: .dark)
+        progressHUD?.textLabel.text = "Exploring services..."
+        progressHUD?.show(in: self.view, animated: true)
+        
         for service in services {
             let thisService = service as CBService
             if Hexiwear.validService(thisService, isOTAPEnabled: isOTAPEnabled) {
-                peripheral.discoverCharacteristics(nil, forService: thisService)
+                peripheral.discoverCharacteristics(nil, for: thisService)
             }
         }
-        progressHUD.dismiss()
+        progressHUD?.dismiss()
     }
     
     // Enable notification and sensor for each characteristic of valid service
-    func peripheral(peripheral: CBPeripheral, didDiscoverCharacteristicsForService service: CBService, error: NSError?) {
-        guard error == Optional.None else {
-            print("didDiscoverCharacteristicsForService error: \(error)")
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+        guard error == nil else {
+            print("didDiscoverCharacteristicsForService error: \(String(describing: error))")
             return
         }
         
         guard let characteristics = service.characteristics else { return }
-
-        let progressHUD = JGProgressHUD(style: .Dark)
-        progressHUD.textLabel.text = "Discovering characteristics..."
-        progressHUD.showInView(self.view, animated: true)
+        
+        let progressHUD = JGProgressHUD(style: .dark)
+        progressHUD?.textLabel.text = "Discovering characteristics..."
+        progressHUD?.show(in: self.view, animated: true)
         
         for charateristic in characteristics {
             let thisCharacteristic = charateristic as CBCharacteristic
             
             if Hexiwear.validDataCharacteristic(thisCharacteristic, isOTAPEnabled: isOTAPEnabled) {
-
-                if thisCharacteristic.UUID == WeatherTemperatureUUID {
+                
+                if thisCharacteristic.uuid == WeatherTemperatureUUID {
                     weatherTemperatureCharacteristics = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == WeatherHumidityUUID {
+                else if thisCharacteristic.uuid == WeatherHumidityUUID {
                     weatherHumidityCharacteristics = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == WeatherPressureUUID {
+                else if thisCharacteristic.uuid == WeatherPressureUUID {
                     weatherPressureCharacteristics = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == WeatherLightUUID {
+                else if thisCharacteristic.uuid == WeatherLightUUID {
                     weatherLightCharacteristics = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == BatteryLevelUUID {
+                else if thisCharacteristic.uuid == BatteryLevelUUID {
                     batteryCharacteristics = thisCharacteristic
-                    peripheral.readValueForCharacteristic(batteryCharacteristics!)
-                    peripheral.setNotifyValue(true, forCharacteristic: batteryCharacteristics!)
+                    peripheral.readValue(for: batteryCharacteristics!)
+                    peripheral.setNotifyValue(true, for: batteryCharacteristics!)
                 }
-                else if thisCharacteristic.UUID == MotionAccelerometerUUID {
+                else if thisCharacteristic.uuid == MotionAccelerometerUUID {
                     motionAccelCharacteristics = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == MotionMagnetometerUUID {
+                else if thisCharacteristic.uuid == MotionMagnetometerUUID {
                     motionMagnetCharacteristics = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == MotionGyroUUID {
+                else if thisCharacteristic.uuid == MotionGyroUUID {
                     motionGyroCharacteristics = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == HealthHeartRateUUID {
+                else if thisCharacteristic.uuid == HealthHeartRateUUID {
                     healthHeartRateCharacteristics = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == HealthStepsUUID {
+                else if thisCharacteristic.uuid == HealthStepsUUID {
                     healthStepsCharacteristics = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == HealthCaloriesUUID {
+                else if thisCharacteristic.uuid == HealthCaloriesUUID {
                     healthCaloriesCharacteristics = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == SerialNumberUUID {
+                else if thisCharacteristic.uuid == SerialNumberUUID {
                     serialNumberCharacteristic = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == DIManufacturerUUID {
+                else if thisCharacteristic.uuid == DIManufacturerUUID {
                     diManufacturerCharacteristics = thisCharacteristic
-                    peripheral.readValueForCharacteristic(diManufacturerCharacteristics!)
+                    peripheral.readValue(for: diManufacturerCharacteristics!)
                 }
-                else if thisCharacteristic.UUID == DIHWRevisionUUID {
+                else if thisCharacteristic.uuid == DIHWRevisionUUID {
                     diHWRevisionCharacteristics = thisCharacteristic
-                    peripheral.readValueForCharacteristic(diHWRevisionCharacteristics!)
+                    peripheral.readValue(for: diHWRevisionCharacteristics!)
                 }
-                else if thisCharacteristic.UUID == DIFWRevisionUUID {
+                else if thisCharacteristic.uuid == DIFWRevisionUUID {
                     diFWRevisionCharacteristics = thisCharacteristic
-                    peripheral.readValueForCharacteristic(diFWRevisionCharacteristics!)
+                    peripheral.readValue(for: diFWRevisionCharacteristics!)
                 }
-                else if thisCharacteristic.UUID == HexiwearModeUUID {
+                else if thisCharacteristic.uuid == HexiwearModeUUID {
                     hexiwearModeCharacteristic = thisCharacteristic
-                    peripheral.readValueForCharacteristic(hexiwearModeCharacteristic!)
+                    peripheral.readValue(for: hexiwearModeCharacteristic!)
                 }
-                else if thisCharacteristic.UUID == AlertINUUID {
+                else if thisCharacteristic.uuid == AlertINUUID {
                     alertInCharacteristic = thisCharacteristic
                     setTime()
                 }
             }
         }
-        progressHUD.dismiss()
-
+        progressHUD?.dismiss()
+        
     }
     
     // Get data values when they are updated
-    func peripheral(peripheral: CBPeripheral, didUpdateValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         
-        guard error == Optional.None else {
-            print("didUpdateValueForCharacteristic error: \(error)")
+        guard error == nil else {
+            print("didUpdateValueForCharacteristic error: \(String(describing: error))")
             // If authentication is lost, drop readings processing
-            if error!.domain == CBATTErrorDomain {
-                let authenticationError: Int = CBATTError.InsufficientAuthentication.rawValue
-                if error!.code == authenticationError {
+            if error!._domain == CBATTErrorDomain {
+                let authenticationError: Int = CBATTError.Code.insufficientAuthentication.rawValue
+                if error!._code == authenticationError {
                     hexiwearDelegate?.didLoseBonding()
                 }
             }
             return
         }
-
-        let lastSensorReadingDate = NSDate()
         
-        if characteristic.UUID == WeatherTemperatureUUID {
+        let lastSensorReadingDate = Date()
+        
+        if characteristic.uuid == WeatherTemperatureUUID {
             hexiwearReadings.ambientTemperature = Hexiwear.getAmbientTemperature(characteristic.value)
             hexiwearReadings.lastWeatherDate = lastSensorReadingDate
             trackingDevice.lastSensorReadingDate = lastSensorReadingDate
             trackingDevice.lastTemperature = hexiwearReadings.ambientTemperature
             shouldPublishToMQTT = true
         }
-        else if characteristic.UUID == WeatherHumidityUUID {
+        else if characteristic.uuid == WeatherHumidityUUID {
             hexiwearReadings.relativeHumidity = Hexiwear.getRelativeHumidity(characteristic.value)
             hexiwearReadings.lastWeatherDate = lastSensorReadingDate
             trackingDevice.lastSensorReadingDate = lastSensorReadingDate
             trackingDevice.lastAirHumidity = hexiwearReadings.relativeHumidity
             shouldPublishToMQTT = true
         }
-        else if characteristic.UUID == WeatherPressureUUID {
+        else if characteristic.uuid == WeatherPressureUUID {
             hexiwearReadings.airPressure = Hexiwear.getPressureData(characteristic.value)
             hexiwearReadings.lastWeatherDate = lastSensorReadingDate
             trackingDevice.lastSensorReadingDate = lastSensorReadingDate
             trackingDevice.lastAirPressure = hexiwearReadings.airPressure
             shouldPublishToMQTT = true
         }
-        else if characteristic.UUID == WeatherLightUUID {
+        else if characteristic.uuid == WeatherLightUUID {
             hexiwearReadings.ambientLight = Hexiwear.getAmbientLight(characteristic.value)
             hexiwearReadings.lastWeatherDate = lastSensorReadingDate
             trackingDevice.lastLight = hexiwearReadings.ambientLight
             trackingDevice.lastSensorReadingDate = lastSensorReadingDate
             shouldPublishToMQTT = true
         }
-        else if characteristic.UUID == BatteryLevelUUID {
+        else if characteristic.uuid == BatteryLevelUUID {
             isBatteryRead = true
             hexiwearReadings.batteryLevel = Hexiwear.getBatteryLevel(characteristic.value)
         }
-        else if characteristic.UUID == MotionAccelerometerUUID {
+        else if characteristic.uuid == MotionAccelerometerUUID {
             if let accel = Hexiwear.getMotionAccelerometerValues(characteristic.value) {
                 hexiwearReadings.motionAccelX = accel.x
                 hexiwearReadings.motionAccelY = accel.y
@@ -400,7 +402,7 @@ extension HexiwearTableViewController: CBPeripheralDelegate {
                 shouldPublishToMQTT = true
             }
         }
-        else if characteristic.UUID == MotionMagnetometerUUID {
+        else if characteristic.uuid == MotionMagnetometerUUID {
             if let magnet = Hexiwear.getMotionMagnetometerValues(characteristic.value) {
                 hexiwearReadings.motionMagnetX = magnet.x
                 hexiwearReadings.motionMagnetY = magnet.y
@@ -413,7 +415,7 @@ extension HexiwearTableViewController: CBPeripheralDelegate {
                 shouldPublishToMQTT = true
             }
         }
-        else if characteristic.UUID == MotionGyroUUID {
+        else if characteristic.uuid == MotionGyroUUID {
             if let gyro = Hexiwear.getMotionGyroValues(characteristic.value) {
                 hexiwearReadings.motionGyroX = gyro.x
                 hexiwearReadings.motionGyroY = gyro.y
@@ -426,41 +428,41 @@ extension HexiwearTableViewController: CBPeripheralDelegate {
                 shouldPublishToMQTT = true
             }
         }
-        else if characteristic.UUID == HealthHeartRateUUID {
+        else if characteristic.uuid == HealthHeartRateUUID {
             hexiwearReadings.heartRate = Hexiwear.getHeartRate(characteristic.value)
             hexiwearReadings.lastHeartRateDate = lastSensorReadingDate
             trackingDevice.lastHeartRate = hexiwearReadings.heartRate
             trackingDevice.lastSensorReadingDate = lastSensorReadingDate
             shouldPublishToMQTT = true
         }
-        else if characteristic.UUID == HealthStepsUUID {
+        else if characteristic.uuid == HealthStepsUUID {
             hexiwearReadings.steps = Hexiwear.getSteps(characteristic.value)
             hexiwearReadings.lastStepsDate = lastSensorReadingDate
             trackingDevice.lastSteps = hexiwearReadings.steps
             trackingDevice.lastSensorReadingDate = lastSensorReadingDate
             shouldPublishToMQTT = true
         }
-        else if characteristic.UUID == HealthCaloriesUUID {
+        else if characteristic.uuid == HealthCaloriesUUID {
             hexiwearReadings.calories = Hexiwear.getCalories(characteristic.value)
             hexiwearReadings.lastCaloriesDate = lastSensorReadingDate
             trackingDevice.lastCalories = hexiwearReadings.calories
             trackingDevice.lastSensorReadingDate = lastSensorReadingDate
             shouldPublishToMQTT = true
         }
-
-        else if characteristic.UUID == DIManufacturerUUID {
+            
+        else if characteristic.uuid == DIManufacturerUUID {
             deviceInfo.manufacturer = Hexiwear.getManufacturer(characteristic.value) ?? ""
         }
-        else if characteristic.UUID == DIFWRevisionUUID {
+        else if characteristic.uuid == DIFWRevisionUUID {
             deviceInfo.firmwareRevision = Hexiwear.getFirmwareRevision(characteristic.value) ?? ""
         }
-        else if characteristic.UUID == HexiwearModeUUID {
+        else if characteristic.uuid == HexiwearModeUUID {
             if let rawMode = Hexiwear.getHexiwearMode(characteristic.value),
-                   mode = HexiwearMode(rawValue: rawMode) {
-                    hexiwearReadings.hexiwearMode = mode
+                let mode = HexiwearMode(rawValue: rawMode) {
+                hexiwearReadings.hexiwearMode = mode
             }
             else {
-                hexiwearReadings.hexiwearMode = .IDLE
+                hexiwearReadings.hexiwearMode = .idle
             }
             availableReadings = HexiwearMode.getReadingsForMode(hexiwearReadings.hexiwearMode)
             trackingDevice.lastHexiwearMode = hexiwearReadings.hexiwearMode.rawValue
@@ -471,32 +473,32 @@ extension HexiwearTableViewController: CBPeripheralDelegate {
         refreshReadingsLabels(hexiwearReadings)
     }
     
-    func peripheral(peripheral: CBPeripheral, didWriteValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didWriteValueFor characteristic: CBCharacteristic, error: Error?) {
         
         if let error = error { print("didWriteValueForCharacteristic error: \(error)") }
-
-        if characteristic.UUID == AlertINUUID {
+        
+        if characteristic.uuid == AlertINUUID {
             let success = error == nil
             timeSettingDelegate?.didFinishSettingTime(success)
-
+            
             if !success {
                 let message = "Insufficient authorisation error occured. Click OK to open Bluetooth settings and choose forget HEXIWEAR and try again."
-                guard let topVC = UIApplication.sharedApplication().keyWindow?.rootViewController?.topMostViewController() else { return }
+                guard let topVC = UIApplication.shared.keyWindow?.rootViewController?.topMostViewController() else { return }
                 showOKAndCancelAlertWithTitle(applicationTitle, message: message, viewController: topVC, OKhandler: {_ in
-                    UIApplication.sharedApplication().openURL(NSURL(string:UIApplicationOpenSettingsURLString)!);
+                    UIApplication.shared.openURL(URL(string:UIApplicationOpenSettingsURLString)!);
                 })
             }
         }
     }
     
     
-    private func refreshReadingsLabels(readings: HexiwearReadings) {
+    fileprivate func refreshReadingsLabels(_ readings: HexiwearReadings) {
         
         // battery cell
         batteryCell.topText = ""
         batteryCell.middleText = readings.batteryLevelAsString()
         batteryCell.bottomText = ""
-
+        
         // temperature cell
         temperatureCell.topText = ""
         temperatureCell.middleText = readings.ambientTemperatureAsString()
@@ -516,12 +518,12 @@ extension HexiwearTableViewController: CBPeripheralDelegate {
         lightCell.topText = ""
         lightCell.middleText = readings.ambientLightAsString()
         lightCell.bottomText = ""
-
+        
         // Acceleration cell
         acceleratorCell.xValue = readings.motionAccelXAsString()
         acceleratorCell.yValue = readings.motionAccelYAsString()
         acceleratorCell.zValue = readings.motionAccelZAsString()
-
+        
         // Gyro cell
         gyroCell.xValue = readings.motionGyroXAsString()
         gyroCell.yValue = readings.motionGyroYAsString()
@@ -552,61 +554,61 @@ extension HexiwearTableViewController: CBPeripheralDelegate {
         
         guard let hexiwearPeripheral = self.hexiwearPeripheral else { return }
         
-        if let batteryChar = batteryCharacteristics where !isBatteryRead && batteryIsOn && availableReadings.contains(.BATTERY) {
-            hexiwearPeripheral.readValueForCharacteristic(batteryChar)
-        }
-
-        if let motionAccel = motionAccelCharacteristics where acceleratorIsOn && availableReadings.contains(.ACCELEROMETER) {
-            hexiwearPeripheral.readValueForCharacteristic(motionAccel)
+        if let batteryChar = batteryCharacteristics, !isBatteryRead && batteryIsOn && availableReadings.contains(.battery) {
+            hexiwearPeripheral.readValue(for: batteryChar)
         }
         
-        if let motionMagnet = motionMagnetCharacteristics where magnetometerIsOn && availableReadings.contains(.MAGNETOMETER) {
-            hexiwearPeripheral.readValueForCharacteristic(motionMagnet)
+        if let motionAccel = motionAccelCharacteristics, acceleratorIsOn && availableReadings.contains(.accelerometer) {
+            hexiwearPeripheral.readValue(for: motionAccel)
         }
         
-        if let motionGyro = motionGyroCharacteristics where gyroIsOn && availableReadings.contains(.GYRO){
-            hexiwearPeripheral.readValueForCharacteristic(motionGyro)
+        if let motionMagnet = motionMagnetCharacteristics, magnetometerIsOn && availableReadings.contains(.magnetometer) {
+            hexiwearPeripheral.readValue(for: motionMagnet)
         }
         
-        if let weatherLight = weatherLightCharacteristics where lightIsOn && availableReadings.contains(.LIGHT) {
-            hexiwearPeripheral.readValueForCharacteristic(weatherLight)
+        if let motionGyro = motionGyroCharacteristics, gyroIsOn && availableReadings.contains(.gyro){
+            hexiwearPeripheral.readValue(for: motionGyro)
         }
         
-        if let weatherTemperature = weatherTemperatureCharacteristics where temperatureIsOn && availableReadings.contains(.TEMPERATURE){
-            hexiwearPeripheral.readValueForCharacteristic(weatherTemperature)
+        if let weatherLight = weatherLightCharacteristics, lightIsOn && availableReadings.contains(.light) {
+            hexiwearPeripheral.readValue(for: weatherLight)
         }
         
-        if let weatherHumidity = weatherHumidityCharacteristics where humidityIsOn && availableReadings.contains(.HUMIDITY) {
-            hexiwearPeripheral.readValueForCharacteristic(weatherHumidity)
+        if let weatherTemperature = weatherTemperatureCharacteristics, temperatureIsOn && availableReadings.contains(.temperature){
+            hexiwearPeripheral.readValue(for: weatherTemperature)
         }
         
-        if let weatherPressure = weatherPressureCharacteristics where pressureIsOn && availableReadings.contains(.PRESSURE) {
-            hexiwearPeripheral.readValueForCharacteristic(weatherPressure)
+        if let weatherHumidity = weatherHumidityCharacteristics, humidityIsOn && availableReadings.contains(.humidity) {
+            hexiwearPeripheral.readValue(for: weatherHumidity)
         }
         
-        if let healthHeartRate = healthHeartRateCharacteristics where heartrateIsOn && availableReadings.contains(.HEARTRATE) {
-            hexiwearPeripheral.readValueForCharacteristic(healthHeartRate)
+        if let weatherPressure = weatherPressureCharacteristics, pressureIsOn && availableReadings.contains(.pressure) {
+            hexiwearPeripheral.readValue(for: weatherPressure)
         }
         
-        if let healthSteps = healthStepsCharacteristics where stepsIsOn && availableReadings.contains(.PEDOMETER) {
-            hexiwearPeripheral.readValueForCharacteristic(healthSteps)
+        if let healthHeartRate = healthHeartRateCharacteristics, heartrateIsOn && availableReadings.contains(.heartrate) {
+            hexiwearPeripheral.readValue(for: healthHeartRate)
         }
-
-        if let healthCalories = healthCaloriesCharacteristics where caloriesIsOn && availableReadings.contains(.CALORIES) {
-            hexiwearPeripheral.readValueForCharacteristic(healthCalories)
+        
+        if let healthSteps = healthStepsCharacteristics, stepsIsOn && availableReadings.contains(.pedometer) {
+            hexiwearPeripheral.readValue(for: healthSteps)
         }
-
+        
+        if let healthCalories = healthCaloriesCharacteristics, caloriesIsOn && availableReadings.contains(.calories) {
+            hexiwearPeripheral.readValue(for: healthCalories)
+        }
+        
         if let hexiwearMode = hexiwearModeCharacteristic {
-            hexiwearPeripheral.readValueForCharacteristic(hexiwearMode)
+            hexiwearPeripheral.readValue(for: hexiwearMode)
         }
-
+        
         if sendToCloudIsOn && shouldPublishToMQTT { publishToMQTT() }
     }
     
     func publishToMQTT() {
         // Drop any mqtt for demo user
         guard isDemoAccount == false else { return }
-
+        
         // Transmit to MQTT server if necessary
         let shouldTransmit = sendToCloudIsOn
         let heartbeatElapsed = trackingDevice.isHeartbeatIntervalReached()
@@ -630,14 +632,14 @@ extension HexiwearTableViewController: CBPeripheralDelegate {
             
             let lastHexiwearMode: HexiwearMode
             if let mode = trackingDevice.lastHexiwearMode {
-                lastHexiwearMode = HexiwearMode(rawValue: mode) ?? .IDLE
+                lastHexiwearMode = HexiwearMode(rawValue: mode) ?? .idle
             }
             else {
-                lastHexiwearMode = .IDLE
+                lastHexiwearMode = .idle
             }
-
+            
             let hexiwearReadings = HexiwearReadings(batteryLevel: nil, temperature: lastTemperature, pressure: lastPressure, humidity: lastHumidity, accelX: lastAccelX, accelY: lastAccelY, accelZ: lastAccelZ, gyroX: lastGyroX, gyroY: lastGyroY, gyroZ: lastGyroZ, magnetX: lastMagnetX, magnetY: lastMagnetY, magnetZ: lastMagnetZ, steps: lastSteps, calories: lastCalories, heartRate: lastHeartRate, ambientLight: lastLight, hexiwearMode: lastHexiwearMode)
-                        
+            
             mqttAPI.publishHexiwearReadings(hexiwearReadings, forSerial: wolkSerialForHexiserial ?? "")
         }
     }
@@ -646,8 +648,8 @@ extension HexiwearTableViewController: CBPeripheralDelegate {
 extension HexiwearTableViewController : MQTTAPIProtocol {
     
     func didPublishReadings() {
-        dispatch_async(dispatch_get_main_queue()) {
-            self.trackingDevice.lastPublished = NSDate()
+        DispatchQueue.main.async {
+            self.trackingDevice.lastPublished = Date()
             self.trackingDevice.lastTemperature = nil
             self.trackingDevice.lastAirPressure = nil
             self.trackingDevice.lastAirHumidity = nil
@@ -663,7 +665,7 @@ extension HexiwearTableViewController : MQTTAPIProtocol {
             self.trackingDevice.lastSteps = nil
             self.trackingDevice.lastCalories = nil
             self.trackingDevice.lastHeartRate = nil
-            self.trackingDevice.lastLight = nil            
+            self.trackingDevice.lastLight = nil
         }
     }
 }
@@ -682,22 +684,22 @@ extension HexiwearTableViewController : HexiwearSettingsDelegate {
     }
     
     func setTime() {
-        guard let alertIn = alertInCharacteristic, hexiwearPeripheral = self.hexiwearPeripheral else { return }
+        guard let alertIn = alertInCharacteristic, let hexiwearPeripheral = self.hexiwearPeripheral else { return }
         let newTimeBinary = Hexiwear.getCurrentTimestampForHexiwear(true)
-        let newTimeData = NSData(bytes: newTimeBinary, length: newTimeBinary.count)
-        hexiwearPeripheral.writeValue(newTimeData, forCharacteristic: alertIn, type: CBCharacteristicWriteType.WithResponse)
+        let newTimeData = Data(bytes: UnsafePointer<UInt8>(newTimeBinary), count: newTimeBinary.count)
+        hexiwearPeripheral.writeValue(newTimeData, for: alertIn, type: CBCharacteristicWriteType.withResponse)
     }
 }
 
 extension HexiwearTableViewController : HexiwearReconnection {
-    func didReconnectPeripheral(peripheral: CBPeripheral) {
+    func didReconnectPeripheral(_ peripheral: CBPeripheral) {
         isConnected = true
-        let progressHUD = JGProgressHUD(style: .Dark)
-        progressHUD.textLabel.text = "Reconnecting..."
-        progressHUD.showInView(self.view, animated: true)
-        progressHUD.dismissAfterDelay(1.0, animated: true)
+        let progressHUD = JGProgressHUD(style: .dark)
+        progressHUD?.textLabel.text = "Reconnecting..."
+        progressHUD?.show(in: self.view, animated: true)
+        progressHUD?.dismiss(afterDelay: 1.0, animated: true)
         tableView.reloadData()
-
+        
         hexiwearPeripheral = peripheral
         shouldDiscoverServices = true
         discoverHexiwearServices()
@@ -705,11 +707,12 @@ extension HexiwearTableViewController : HexiwearReconnection {
     
     func didDisconnectPeripheral() {
         isConnected = false
-        let progressHUD = JGProgressHUD(style: .Dark)
-        progressHUD.textLabel.text = "Hexiwear disconnected!"
-        progressHUD.showInView(self.view, animated: true)
-        progressHUD.dismissAfterDelay(2.0, animated: true)
+        let progressHUD = JGProgressHUD(style: .dark)
+        progressHUD?.textLabel.text = "Hexiwear disconnected!"
+        progressHUD?.show(in: self.view, animated: true)
+        progressHUD?.dismiss(afterDelay: 2.0, animated: true)
         tableView.reloadData()
     }
 }
+
 

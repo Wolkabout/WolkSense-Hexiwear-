@@ -23,14 +23,15 @@
 
 import UIKit
 import CoreBluetooth
+import JGProgressHUD
 
 protocol DeviceActivationDelegate {
-    func didActivateDevice(pointId: Int, serials: SerialMapping)
+    func didActivateDevice(_ pointId: Int, serials: SerialMapping)
     func didSkipActivation()
 }
 
 class SingleTextViewController: UIViewController {
-
+    
     var skipButton: UIBarButtonItem!
     var actionButton: UIBarButtonItem!
     
@@ -40,18 +41,18 @@ class SingleTextViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        skipButton = UIBarButtonItem(title: "Skip", style: .Plain, target: self, action: #selector(SingleTextViewController.skipButtonAction))
+        skipButton = UIBarButtonItem(title: "Skip", style: .plain, target: self, action: #selector(SingleTextViewController.skipButtonAction))
         navigationItem.leftBarButtonItems = [skipButton]
-        actionButton = UIBarButtonItem(title: "Activate", style: .Plain, target: self, action: #selector(SingleTextViewController.actionButtonAction))
-        actionButton.enabled = false
+        actionButton = UIBarButtonItem(title: "Activate", style: .plain, target: self, action: #selector(SingleTextViewController.actionButtonAction))
+        actionButton.isEnabled = false
         navigationItem.rightBarButtonItems = [actionButton]
         
         if selectedPeripheral != nil {
-            selectedPeripheralSerial = selectedPeripheral!.identifier.UUIDString
+            selectedPeripheralSerial = selectedPeripheral!.identifier.uuidString
         }
-
+        
     }
-
+    
     func toggleActivateButtonEnabled() {
         print("Override in subclass")
     }
@@ -64,7 +65,7 @@ class SingleTextViewController: UIViewController {
         print("Override in subclass")
     }
     
-
+    
 }
 
 class ActivateDeviceViewController : SingleTextViewController {
@@ -76,24 +77,24 @@ class ActivateDeviceViewController : SingleTextViewController {
     var deviceActivationDelegate: DeviceActivationDelegate?
     var selectableDevices: [Device] = []
     var selectedDeviceSerial: String = ""
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         skipButton.title = "Skip"
         actionButton.title = "Activate"
         deviceName.delegate = self
         title = "Activate hexiwear"
-        errorLabel.hidden = true
+        errorLabel.isHidden = true
         
         selectableDevices = dataStore.points
-            .filter { $0.owner.uppercaseString == "SELF" && $0.isHexiwear() }
-            .sort   { $0.name.uppercaseString < $1.name.uppercaseString }
-        registerWithUsedName.enabled = selectableDevices.count > 0
+            .filter { $0.owner.uppercased() == "SELF" && $0.isHexiwear() }
+            .sorted   { $0.name.uppercased() < $1.name.uppercased() }
+        registerWithUsedName.isEnabled = selectableDevices.count > 0
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toAlreadyRegisteredNames" {
-            if let vc = segue.destinationViewController as? ShowDevicesTableViewController {
+            if let vc = segue.destination as? ShowDevicesTableViewController {
                 vc.selectableDevices = selectableDevices
                 vc.activatedDeviceDelegate = self
             }
@@ -101,31 +102,31 @@ class ActivateDeviceViewController : SingleTextViewController {
     }
     
     override func toggleActivateButtonEnabled() {
-        if let dn = deviceName.text where dn.isEmpty == false {
-            actionButton.enabled = true
+        if let dn = deviceName.text, dn.isEmpty == false {
+            actionButton.isEnabled = true
         }
         else {
-            actionButton.enabled = false
+            actionButton.isEnabled = false
         }
     }
-
+    
     override func actionButtonAction() {
         
         guard selectedPeripheralSerial != "" else {
             errorLabel.text = "Error activating HEXIWEAR. Missing serial number."
-            errorLabel.hidden = false
+            errorLabel.isHidden = false
             view.setNeedsDisplay()
             return
         }
         
-        let progressHUD = JGProgressHUD(style: .Dark)
-        progressHUD.textLabel.text = "Activating..."
-        progressHUD.showInView(self.view, animated: true)
+        let progressHUD = JGProgressHUD(style: .dark)
+        progressHUD?.textLabel.text = "Activating..."
+        progressHUD?.show(in: self.view, animated: true)
         
         dataStore.getSerial(
             // get serial failure
-            { _ in self.activationErrorHandler(progressHUD) },
-
+            { _ in self.activationErrorHandler(progressHUD!) },
+            
             // get serial success
             onSuccess: { serial in
                 let deviceName = self.deviceName.text!
@@ -135,61 +136,61 @@ class ActivateDeviceViewController : SingleTextViewController {
                 guard self.selectedDeviceSerial.characters.count > 0 else {
                     // ... just activate new device
                     print("ACTI -- no old serial, just activate new one")
-                    self.activateDeviceWithSerial(serial, deviceName: deviceName, progressHUD: progressHUD)
+                    self.activateDeviceWithSerial(serial, deviceName: deviceName, progressHUD: progressHUD!)
                     return
                 }
                 
                 // check if already selected device serial is activated
                 if self.selectedDeviceSerial.characters.count > 0 {
                     self.dataStore.getActivationStatusForSerial( self.selectedDeviceSerial,
-                        onFailure: { _ in self.activationErrorHandler(progressHUD) },
-                        onSuccess: { activationStatus in
-                        dispatch_async(dispatch_get_main_queue()) {
-
-                            // ... if it is activated then first deactivate device with old serial number
-                            if activationStatus == "ACTIVATED" {
-                                print("ACTI -- old serial ACTIVATED")
-                                self.dataStore.deactivateDevice(self.selectedDeviceSerial,
-                                    onFailure: { _ in self.activationErrorHandler(progressHUD) },
-                                    onSuccess: {
-                                        print("ACTI -- old serial deactivated, proceeding with new serial activation")
-                            
-                                        // ... and activate device with new serial number
-                                        self.activateDeviceWithSerial(serial, deviceName: deviceName, progressHUD: progressHUD)
-                                    }
-                                )
-                            }
-                            else {
-                                // ... if it is not activated then activate device with new serial number
-                                print("ACTI -- old serial NOT ACTIVATED, proceeding with new serial activation")
-                                self.activateDeviceWithSerial(serial, deviceName: deviceName, progressHUD: progressHUD)
-                            }
-                        }
+                                                                 onFailure: { _ in self.activationErrorHandler(progressHUD!) },
+                                                                 onSuccess: { activationStatus in
+                                                                    DispatchQueue.main.async() {
+                                                                        
+                                                                        // ... if it is activated then first deactivate device with old serial number
+                                                                        if activationStatus == "ACTIVATED" {
+                                                                            print("ACTI -- old serial ACTIVATED")
+                                                                            self.dataStore.deactivateDevice(self.selectedDeviceSerial,
+                                                                                                            onFailure: { _ in self.activationErrorHandler(progressHUD!) },
+                                                                                                            onSuccess: {
+                                                                                                                print("ACTI -- old serial deactivated, proceeding with new serial activation")
+                                                                                                                
+                                                                                                                // ... and activate device with new serial number
+                                                                                                                self.activateDeviceWithSerial(serial, deviceName: deviceName, progressHUD: progressHUD!)
+                                                                            }
+                                                                            )
+                                                                        }
+                                                                        else {
+                                                                            // ... if it is not activated then activate device with new serial number
+                                                                            print("ACTI -- old serial NOT ACTIVATED, proceeding with new serial activation")
+                                                                            self.activateDeviceWithSerial(serial, deviceName: deviceName, progressHUD: progressHUD!)
+                                                                        }
+                                                                    }
                     }
                     )
                 }
-            }
+        }
         )
     }
     
-    private func activationErrorHandler(progressHUD: JGProgressHUD) {
-        dispatch_async(dispatch_get_main_queue()) {
+    fileprivate func activationErrorHandler(_ progressHUD: JGProgressHUD) {
+        DispatchQueue.main.async {
             progressHUD.dismiss()
             self.errorLabel.text = "Error activating device!"
-            self.errorLabel.hidden = false
+            self.errorLabel.isHidden = false
             self.view.setNeedsDisplay()
         }
     }
     
-    private func activateDeviceWithSerial(serial: String, deviceName: String, progressHUD: JGProgressHUD) {
+    fileprivate func activateDeviceWithSerial(_ serial: String, deviceName: String, progressHUD: JGProgressHUD) {
         dataStore.activateDeviceWithSerialAndName(serial, deviceName: deviceName,
-            // activate failure
+                                                  // activate failure
             onFailure: { reason in
-                dispatch_async(dispatch_get_main_queue()) {
+                DispatchQueue.main.async {
                     progressHUD.dismiss()
                     var messageText = ""
                     switch reason {
-                    case .NoSuccessStatusCode(let statusCode):
+                    case .noSuccessStatusCode(let statusCode, _):
                         if statusCode == CONFLICT {
                             messageText = "Device name is already used! Try with different name or tap on 'Continue existing device'"
                         }
@@ -200,14 +201,14 @@ class ActivateDeviceViewController : SingleTextViewController {
                         messageText = "Error activating device!"
                     }
                     self.errorLabel.text = messageText
-                    self.errorLabel.hidden = false
+                    self.errorLabel.isHidden = false
                     self.view.setNeedsDisplay()
                 }
-            },
+        },
             
             // activate success
             onSuccess: { pointId, password in
-                dispatch_async(dispatch_get_main_queue()) {
+                DispatchQueue.main.async {
                     progressHUD.dismiss()
                 }
                 print("ACTI -- Activated \(serial) with pointId: \(pointId)")
@@ -215,37 +216,37 @@ class ActivateDeviceViewController : SingleTextViewController {
                 self.dataStore.fetchAll(
                     { _ in
                         self.deviceActivationDelegate?.didActivateDevice(pointId, serials: serialMapping)
-                    },
+                },
                     onSuccess: {
                         self.deviceActivationDelegate?.didActivateDevice(pointId, serials: serialMapping)
-                    }
+                }
                 )
-            }
+        }
         )
     }
     
     override func skipButtonAction() {
         deviceActivationDelegate?.didSkipActivation()
     }
-
-    @IBAction func deviceNameChanged(sender: UITextField) {
+    
+    @IBAction func deviceNameChanged(_ sender: UITextField) {
         toggleActivateButtonEnabled()
         selectedDeviceSerial = ""
-        errorLabel.hidden = true
+        errorLabel.isHidden = true
         self.view.setNeedsDisplay()
     }
 }
 
 extension ActivateDeviceViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
     }
 }
 
 extension ActivateDeviceViewController: ActivatedDeviceDelegate {
-    func didSelectAlreadyActivatedName(name: String, serial: String) {
-        navigationController?.popViewControllerAnimated(true)
+    func didSelectAlreadyActivatedName(_ name: String, serial: String) {
+        navigationController?.popViewController(animated: true)
         deviceName.text = name
         selectedDeviceSerial = serial
         toggleActivateButtonEnabled()

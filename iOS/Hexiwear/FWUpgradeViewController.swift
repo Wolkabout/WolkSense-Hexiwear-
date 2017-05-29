@@ -30,7 +30,7 @@ protocol OTAPDelegate {
 }
 
 class FWUpgradeViewController: UIViewController {
-
+    
     @IBOutlet weak var progressView: UIProgressView!
     @IBOutlet weak var firmwareLabel: UILabel!
     @IBOutlet weak var panelContainer: UIView!
@@ -45,26 +45,26 @@ class FWUpgradeViewController: UIViewController {
     var hexiwearPeripheral : CBPeripheral!
     var hexiwearDelegate: HexiwearPeripheralDelegate?
     var otapDelegate: OTAPDelegate?
-
-
+    
+    
     // OTAP vars
     var isOTAPEnabled         = true // if hexiware is in OTAP mode this will be true
     var hexiwearFW:   [UInt8] = []    // array of bytes of hexiwear firmware
     var hexiwearFWLength: Int = 0
     var otapIsRunning = false
-
-
+    
+    
     var otapControlPointCharacteristic: CBCharacteristic?
     var otapDataCharacteristic: CBCharacteristic?
     var otapStateCharacteristic: CBCharacteristic?
     
     var isOtapStateAvailable = false // first read which otap state (i.e. which firmware file to send) and then proceed with otap
-
-    let formatter = NSNumberFormatter()
+    
+    let formatter = NumberFormatter()
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
+        
         hexiwearPeripheral.delegate = self
         hexiwearPeripheral.discoverServices(nil)
         
@@ -81,14 +81,14 @@ class FWUpgradeViewController: UIViewController {
         fwType.text = ""
     }
     
-    override func viewWillAppear(animated: Bool) {
+    override func viewWillAppear(_ animated: Bool) {
         filenameLabel.text = "FILE: \(fwFileName)"
         versionLabel.text = "VERSION: \(fwVersion)"
         fwType.text = "TYPE: \(fwTypeString)"
     }
     
-    override func viewWillDisappear(animated: Bool) {
-        if isMovingFromParentViewController() && otapIsRunning {
+    override func viewWillDisappear(_ animated: Bool) {
+        if isMovingFromParentViewController && otapIsRunning {
             otapDelegate?.didCancelOTAP()
         }
     }
@@ -98,57 +98,57 @@ class FWUpgradeViewController: UIViewController {
 //MARK:- CBPeripheralDelegate
 extension FWUpgradeViewController: CBPeripheralDelegate {
     
-    func peripheral(peripheral: CBPeripheral, didDiscoverServices error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
         if let error = error { print("didDiscoverServices error: \(error)") }
-
+        
         guard let services = peripheral.services else { return }
         
         for service in services {
             let thisService = service as CBService
             if Hexiwear.validService(thisService, isOTAPEnabled: isOTAPEnabled) {
-                peripheral.discoverCharacteristics(nil, forService: thisService)
+                peripheral.discoverCharacteristics(nil, for: thisService)
             }
         }
     }
     
     // Enable notification for each characteristic of valid service
-    func peripheral(peripheral: CBPeripheral, didDiscoverCharacteristicsForService service: CBService, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
         if let error = error { print("didDiscoverCharacteristicsForService error: \(error)") }
-
+        
         guard let characteristics = service.characteristics else { return }
         
         for charateristic in characteristics {
             let thisCharacteristic = charateristic as CBCharacteristic
             if Hexiwear.validDataCharacteristic(thisCharacteristic, isOTAPEnabled: isOTAPEnabled) {
-                if thisCharacteristic.UUID == OTAPControlPointUUID {
+                if thisCharacteristic.uuid == OTAPControlPointUUID {
                     otapControlPointCharacteristic = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == OTAPDataUUID {
+                else if thisCharacteristic.uuid == OTAPDataUUID {
                     otapDataCharacteristic = thisCharacteristic
                 }
-                else if thisCharacteristic.UUID == OTAPStateUUID {
+                else if thisCharacteristic.uuid == OTAPStateUUID {
                     otapStateCharacteristic = thisCharacteristic
-                    peripheral.readValueForCharacteristic(otapStateCharacteristic!)
+                    peripheral.readValue(for: otapStateCharacteristic!)
                 }
             }
         }
     }
     
     // Get data values when they are updated
-    private func setLabelsHidden(hidden: Bool) {
-        panelContainer.hidden = hidden
+    fileprivate func setLabelsHidden(_ hidden: Bool) {
+        panelContainer.isHidden = hidden
     }
     
-    private func setInfo(infoText: String) {
+    fileprivate func setInfo(_ infoText: String) {
         firmwareLabel.text = infoText
     }
     
-    func peripheral(peripheral: CBPeripheral, didUpdateValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
+    func peripheral(_ peripheral: CBPeripheral, didUpdateValueFor characteristic: CBCharacteristic, error: Error?) {
         
         // If authentication is lost, drop OTAP
-        if let err = error where err.domain == CBATTErrorDomain {
-            let authenticationError: Int = CBATTError.InsufficientAuthentication.rawValue
-            if err.code == authenticationError {
+        if let err = error, err._domain == CBATTErrorDomain {
+            let authenticationError: Int = CBATTError.Code.insufficientAuthentication.rawValue
+            if err._code == authenticationError {
                 hexiwearDelegate?.didLoseBonding()
                 return
             }
@@ -156,23 +156,23 @@ extension FWUpgradeViewController: CBPeripheralDelegate {
         
         setLabelsHidden(false)
         
-        if characteristic.UUID == OTAPStateUUID {
+        if characteristic.uuid == OTAPStateUUID {
             isOtapStateAvailable = true
             let otapState = Hexiwear.getOtapState(characteristic.value)
             print("otapState: \(otapState)")
             if let otap = otapControlPointCharacteristic {
-                peripheral.setNotifyValue(true, forCharacteristic: otap)
+                peripheral.setNotifyValue(true, for: otap)
             }
         }
-        else if characteristic.UUID == OTAPControlPointUUID {
+        else if characteristic.uuid == OTAPControlPointUUID {
             otapIsRunning = true
             let rawData = characteristic.value
-            print("Control point notified with \(characteristic.value)")
+            print("Control point notified with \(String(describing: characteristic.value))")
             // Get command
             let otapCommand = getOTAPCommand(rawData)
             
             switch otapCommand {
-            case .NewImageInfoRequest:
+            case .newImageInfoRequest:
                 
                 // Parse received NewImageInfoRequest command
                 guard let _ = OTAP_CMD_NewImgInfoReq(data: rawData) else {
@@ -180,15 +180,15 @@ extension FWUpgradeViewController: CBPeripheralDelegate {
                     return
                 }
                 print("New image info request parsed!")
-
-                guard let data = NSData(contentsOfFile: fwPath) else {
+                
+                guard let data = try? Data(contentsOf: URL(fileURLWithPath: fwPath)) else {
                     setInfo("Error reading firmware file data. Upgrade aborted.")
                     return
                 }
                 
-                var dataBytes: [UInt8] = [UInt8](count: data.length, repeatedValue: 0x00)
-                let length = data.length
-                data.getBytes(&dataBytes, length: length)
+                var dataBytes: [UInt8] = [UInt8](repeating: 0x00, count: data.count)
+                let length = data.count
+                (data as NSData).getBytes(&dataBytes, length: length)
                 hexiwearFW = dataBytes
                 hexiwearFWLength = length
                 
@@ -202,12 +202,12 @@ extension FWUpgradeViewController: CBPeripheralDelegate {
                 // Make NewImageInfoResponse command and send to OTAP Client
                 let newImageInfoResponse = OTAP_CMD_NewImgInfoRes(imageId: uint16ToLittleEndianBytesArray(otapImageFileHeader.imageId), imageVersion: otapImageFileHeader.imageVersion, imageFileSize: otapImageFileHeader.totalImageFileSize)
                 let newImageResponseBinary = newImageInfoResponse.convertToBinary()
-                let newImageResponseData = NSData(bytes: newImageResponseBinary, length: newImageResponseBinary.count)
+                let newImageResponseData = Data(bytes: UnsafePointer<UInt8>(newImageResponseBinary), count: newImageResponseBinary.count)
                 print("write image info response binary: \(newImageResponseBinary) data: \(newImageResponseData)")
-                peripheral.writeValue(newImageResponseData, forCharacteristic: otapControlPointCharacteristic!, type: CBCharacteristicWriteType.WithResponse)
+                peripheral.writeValue(newImageResponseData, for: otapControlPointCharacteristic!, type: CBCharacteristicWriteType.withResponse)
                 print("New image info response sent!")
                 
-            case .ImageBlockRequest:
+            case .imageBlockRequest:
                 
                 // Parse received Image block request command
                 guard let imageBlockRequest = OTAP_CMD_ImgBlockReq(data: rawData) else {
@@ -222,7 +222,7 @@ extension FWUpgradeViewController: CBPeripheralDelegate {
                 
                 self.sendImageChunks(peripheral, startPosition: startPosition, blockSize: blockSize, chunkSize: chunkSize, sequenceNumber: 0, amountOfChunksToSend: 4)
                 
-            case .ErrorNotification:
+            case .errorNotification:
                 
                 otapIsRunning = false
                 // Parse received Error notification command
@@ -241,7 +241,7 @@ extension FWUpgradeViewController: CBPeripheralDelegate {
                 }
                 otapDelegate?.didFailedOTAP()
                 
-            case .ImageTransferComplete:
+            case .imageTransferComplete:
                 otapIsRunning = false
                 // Parse image transfer complete
                 guard let imageTransferComplete = OTAP_CMD_ImgTransferComplete(data: rawData) else {
@@ -249,7 +249,7 @@ extension FWUpgradeViewController: CBPeripheralDelegate {
                     return
                 }
                 
-                if imageTransferComplete.status == OTAP_Status.StatusSuccess {
+                if imageTransferComplete.status == OTAP_Status.statusSuccess {
                     setInfo("Firmware upgrade completed successfully.")
                     print("Image transfer complete with success !")
                 }
@@ -265,7 +265,7 @@ extension FWUpgradeViewController: CBPeripheralDelegate {
         }
     }
     
-    func sendImageChunks(peripheral: CBPeripheral, startPosition: UInt32, blockSize: UInt32, chunkSize: UInt16, sequenceNumber: UInt8, amountOfChunksToSend: UInt8) {
+    func sendImageChunks(_ peripheral: CBPeripheral, startPosition: UInt32, blockSize: UInt32, chunkSize: UInt16, sequenceNumber: UInt8, amountOfChunksToSend: UInt8) {
         
         guard otapIsRunning else { return }
         
@@ -274,7 +274,7 @@ extension FWUpgradeViewController: CBPeripheralDelegate {
         for i: UInt8 in 0 ..< amountOfChunksToSend {
             sendChunk(peripheral, startPosition:startPosition, blockSize: blockSize, chunkSize: chunkSize, sequenceNumber: sequenceNumber + i)
         }
-
+        
         // Print progress
         let start = startPosition / UInt32(chunkSize)
         let end = UInt32(hexiwearFWLength) / UInt32(chunkSize) + 1
@@ -284,7 +284,7 @@ extension FWUpgradeViewController: CBPeripheralDelegate {
         progressView.progress = progressPercentage
         
         if progress <= end {
-            setInfo("Uploaded \(progress) of \(end) chunks (\(formatter.stringFromNumber(Float(100 * progressPercentage))!))%")
+            setInfo("Uploaded \(progress) of \(end) chunks (\(formatter.string(from: NSNumber(value: Float(100 * progressPercentage)))!))%")
         }
         
         if sequenceNumber < 0xFF - amountOfChunksToSend + 1 {
@@ -297,9 +297,9 @@ extension FWUpgradeViewController: CBPeripheralDelegate {
         }
     }
     
-    func sendChunk(peripheral: CBPeripheral, startPosition: UInt32, blockSize: UInt32, chunkSize: UInt16, sequenceNumber: UInt8) {
+    func sendChunk(_ peripheral: CBPeripheral, startPosition: UInt32, blockSize: UInt32, chunkSize: UInt16, sequenceNumber: UInt8) {
         guard otapIsRunning else { return }
-
+        
         let currentChunkStart = startPosition + UInt32(UInt16(sequenceNumber) * chunkSize)
         let proposedChunkEnd = currentChunkStart + UInt32(chunkSize) - 1
         let isProposedChunkEndBeyondFileSize = proposedChunkEnd >= UInt32(hexiwearFWLength)
@@ -310,9 +310,9 @@ extension FWUpgradeViewController: CBPeripheralDelegate {
         let data: [UInt8] = [UInt8](hexiwearFW[Int(currentChunkStart)...Int(currentChunkEnd)])
         let imageChunkCmd = OTAP_CMD_ImgChunkAtt(seqNumber: sequenceNumber, data: data)
         let imageChunkBinary = imageChunkCmd.convertToBinary()
-        let imageChunkData = NSData(bytes: imageChunkBinary, length: imageChunkBinary.count)
+        let imageChunkData = Data(bytes: UnsafePointer<UInt8>(imageChunkBinary), count: imageChunkBinary.count)
         
-        peripheral.writeValue(imageChunkData, forCharacteristic: otapDataCharacteristic!, type: CBCharacteristicWriteType.WithoutResponse)
+        peripheral.writeValue(imageChunkData, for: otapDataCharacteristic!, type: CBCharacteristicWriteType.withoutResponse)
     }
     
 }

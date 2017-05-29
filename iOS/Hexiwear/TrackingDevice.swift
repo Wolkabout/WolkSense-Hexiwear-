@@ -25,8 +25,8 @@ import Foundation
 import CoreLocation
 
 class TrackingDevice {
-
-    let preferences = NSUserDefaults.standardUserDefaults()
+    
+    let preferences = UserDefaults.standard
     
     
     // Account specific properties
@@ -39,13 +39,13 @@ class TrackingDevice {
     //example: "hexi1,wolk1|hexi2,wolk2|hexi3,wolk3|hexi4,wolk4"
     var hexiAndWolkSerials: String {
         get {
-            if let hi  = preferences.objectForKey("\(userAccount)-hexiAndWolkSerials") as? String {
+            if let hi  = preferences.object(forKey: "\(userAccount)-hexiAndWolkSerials") as? String {
                 return hi
             }
             return ""
         }
         set (newHI) {
-            preferences.setObject(newHI, forKey: "\(userAccount)-hexiAndWolkSerials")
+            preferences.set(newHI, forKey: "\(userAccount)-hexiAndWolkSerials")
             preferences.synchronize()
         }
     }
@@ -54,379 +54,379 @@ class TrackingDevice {
     
     var trackingIsOff: Bool {
         get {
-            return preferences.boolForKey("trackingIsOff")
+            return preferences.bool(forKey: "trackingIsOff")
         }
         set (newTracking) {
-            preferences.setBool(newTracking, forKey: "trackingIsOff")
+            preferences.set(newTracking, forKey: "trackingIsOff")
             preferences.synchronize()
         }
     }
-
-    var lastPublished: NSDate? {
+    
+    var lastPublished: Date? {
         get {
-            if let lp = preferences.objectForKey("deviceLastPublished") as? NSDate {
+            if let lp = preferences.object(forKey: "deviceLastPublished") as? Date {
                 return lp
             }
             return nil
         }
         set (newLP) {
-            preferences.setObject(newLP, forKey: "deviceLastPublished")
+            preferences.set(newLP, forKey: "deviceLastPublished")
             preferences.synchronize()
         }
     }
-
-/* HEXI  start*/
-    var lastSensorReadingDate: NSDate? {
+    
+    /* HEXI  start*/
+    var lastSensorReadingDate: Date? {
         get {
-            if let lp = preferences.objectForKey("lastSensorReadingDate") as? NSDate {
+            if let lp = preferences.object(forKey: "lastSensorReadingDate") as? Date {
                 return lp
             }
             return nil
         }
         set (newLP) {
-            preferences.setObject(newLP, forKey: "lastSensorReadingDate")
+            preferences.set(newLP, forKey: "lastSensorReadingDate")
             preferences.synchronize()
         }
     }
-
+    
     var lastTemperature: Double? {
         get {
-            if let lp = preferences.objectForKey("lastTemperature") as? Double {
+            if let lp = preferences.object(forKey: "lastTemperature") as? Double {
                 return lp
             }
             return nil
         }
         set (newLT) {
-            preferences.setObject(newLT, forKey: "lastTemperature")
+            preferences.set(newLT, forKey: "lastTemperature")
             preferences.synchronize()
         }
     }
-
+    
     var lastAirPressure: Double? {
         get {
-            if let lp = preferences.objectForKey("lastAirPressure") as? Double {
+            if let lp = preferences.object(forKey: "lastAirPressure") as? Double {
                 return lp
             }
             return nil
         }
         set (newLP) {
-            preferences.setObject(newLP, forKey: "lastAirPressure")
+            preferences.set(newLP, forKey: "lastAirPressure")
             preferences.synchronize()
         }
     }
     
     var lastAirHumidity: Double? {
         get {
-            if let lp = preferences.objectForKey("lastAirHumidity") as? Double {
+            if let lp = preferences.object(forKey: "lastAirHumidity") as? Double {
                 return lp
             }
             return nil
         }
         set (newLAH) {
-            preferences.setObject(newLAH, forKey: "lastAirHumidity")
+            preferences.set(newLAH, forKey: "lastAirHumidity")
             preferences.synchronize()
         }
     }
-
+    
     var lastLight: Double? {
         get {
-            if let lp = preferences.objectForKey("lastLight") as? Double {
+            if let lp = preferences.object(forKey: "lastLight") as? Double {
                 return lp
             }
             return nil
         }
         set (newLAH) {
-            preferences.setObject(newLAH, forKey: "lastLight")
-             preferences.synchronize()
+            preferences.set(newLAH, forKey: "lastLight")
+            preferences.synchronize()
         }
     }
     
     var lastAccelerationX: Double? {
         get {
-            if let lp = preferences.objectForKey("lastAccelerationX") as? Double {
+            if let lp = preferences.object(forKey: "lastAccelerationX") as? Double {
                 return lp
             }
             return nil
         }
         set (newLAC) {
-            preferences.setObject(newLAC, forKey: "lastAccelerationX")
+            preferences.set(newLAC, forKey: "lastAccelerationX")
             preferences.synchronize()
         }
     }
-
+    
     var lastAccelerationY: Double? {
         get {
-            if let lp = preferences.objectForKey("lastAccelerationY") as? Double {
+            if let lp = preferences.object(forKey: "lastAccelerationY") as? Double {
                 return lp
             }
             return nil
         }
         set (newLAC) {
-            preferences.setObject(newLAC, forKey: "lastAccelerationY")
+            preferences.set(newLAC, forKey: "lastAccelerationY")
             preferences.synchronize()
         }
     }
     
     var lastAccelerationZ: Double? {
         get {
-            if let lp = preferences.objectForKey("lastAccelerationZ") as? Double {
+            if let lp = preferences.object(forKey: "lastAccelerationZ") as? Double {
                 return lp
             }
             return nil
         }
         set (newLAC) {
-            preferences.setObject(newLAC, forKey: "lastAccelerationZ")
+            preferences.set(newLAC, forKey: "lastAccelerationZ")
             preferences.synchronize()
         }
     }
-
+    
     var lastGyroX: Double? {
         get {
-            if let lp = preferences.objectForKey("lastGyroX") as? Double {
+            if let lp = preferences.object(forKey: "lastGyroX") as? Double {
                 return lp
             }
             return nil
         }
         set (newLAG) {
-            preferences.setObject(newLAG, forKey: "lastGyroX")
+            preferences.set(newLAG, forKey: "lastGyroX")
             preferences.synchronize()
         }
     }
     
     var lastGyroY: Double? {
         get {
-            if let lp = preferences.objectForKey("lastGyroY") as? Double {
+            if let lp = preferences.object(forKey: "lastGyroY") as? Double {
                 return lp
             }
             return nil
         }
         set (newLAG) {
-            preferences.setObject(newLAG, forKey: "lastGyroY")
+            preferences.set(newLAG, forKey: "lastGyroY")
             preferences.synchronize()
         }
     }
     
     var lastGyroZ: Double? {
         get {
-            if let lp = preferences.objectForKey("lastGyroZ") as? Double {
+            if let lp = preferences.object(forKey: "lastGyroZ") as? Double {
                 return lp
             }
             return nil
         }
         set (newLAG) {
-            preferences.setObject(newLAG, forKey: "lastGyroZ")
+            preferences.set(newLAG, forKey: "lastGyroZ")
             preferences.synchronize()
         }
     }
-
+    
     var lastMagnetX: Double? {
         get {
-            if let lp = preferences.objectForKey("lastMagnetX") as? Double {
+            if let lp = preferences.object(forKey: "lastMagnetX") as? Double {
                 return lp
             }
             return nil
         }
         set (newMAG) {
-            preferences.setObject(newMAG, forKey: "lastMagnetX")
+            preferences.set(newMAG, forKey: "lastMagnetX")
             preferences.synchronize()
         }
     }
     
     var lastMagnetY: Double? {
         get {
-            if let lp = preferences.objectForKey("lastMagnetY") as? Double {
+            if let lp = preferences.object(forKey: "lastMagnetY") as? Double {
                 return lp
             }
             return nil
         }
         set (newMAG) {
-            preferences.setObject(newMAG, forKey: "lastMagnetY")
+            preferences.set(newMAG, forKey: "lastMagnetY")
             preferences.synchronize()
         }
     }
     
     var lastMagnetZ: Double? {
         get {
-            if let lp = preferences.objectForKey("lastMagnetZ") as? Double {
+            if let lp = preferences.object(forKey: "lastMagnetZ") as? Double {
                 return lp
             }
             return nil
         }
         set (newMAG) {
-            preferences.setObject(newMAG, forKey: "lastMagnetZ")
+            preferences.set(newMAG, forKey: "lastMagnetZ")
             preferences.synchronize()
         }
     }
     
     var lastSteps: Int? {
         get {
-            if let lp = preferences.objectForKey("lastSteps") as? Int {
+            if let lp = preferences.object(forKey: "lastSteps") as? Int {
                 return lp
             }
             return nil
         }
         set (newSteps) {
-            preferences.setObject(newSteps, forKey: "lastSteps")
+            preferences.set(newSteps, forKey: "lastSteps")
             preferences.synchronize()
         }
     }
-
+    
     var lastCalories: Int? {
         get {
-            if let lp = preferences.objectForKey("lastCalories") as? Int {
+            if let lp = preferences.object(forKey: "lastCalories") as? Int {
                 return lp
             }
             return nil
         }
         set (newCalories) {
-            preferences.setObject(newCalories, forKey: "lastCalories")
-            preferences.synchronize()
-        }
-    }
-
-    var lastHeartRate: Int? {
-        get {
-            if let lp = preferences.objectForKey("lastHeartRate") as? Int {
-                return lp
-            }
-            return nil
-        }
-        set (newHR) {
-            preferences.setObject(newHR, forKey: "lastHeartRate")
-            preferences.synchronize()
-        }
-    }
-
-    var lastHexiwearMode: Int? {
-        get {
-            if let lp = preferences.objectForKey("lastHexiwearMode") as? Int {
-                return lp
-            }
-            return nil
-        }
-        set (newHR) {
-            preferences.setObject(newHR, forKey: "lastHexiwearMode")
+            preferences.set(newCalories, forKey: "lastCalories")
             preferences.synchronize()
         }
     }
     
-
+    var lastHeartRate: Int? {
+        get {
+            if let lp = preferences.object(forKey: "lastHeartRate") as? Int {
+                return lp
+            }
+            return nil
+        }
+        set (newHR) {
+            preferences.set(newHR, forKey: "lastHeartRate")
+            preferences.synchronize()
+        }
+    }
+    
+    var lastHexiwearMode: Int? {
+        get {
+            if let lp = preferences.object(forKey: "lastHexiwearMode") as? Int {
+                return lp
+            }
+            return nil
+        }
+        set (newHR) {
+            preferences.set(newHR, forKey: "lastHexiwearMode")
+            preferences.synchronize()
+        }
+    }
+    
+    
     var isBatteryOff: Bool {
         get {
-            return preferences.boolForKey("isBatteryOff")
+            return preferences.bool(forKey: "isBatteryOff")
         }
         set (newValue) {
-            preferences.setBool(newValue, forKey: "isBatteryOff")
+            preferences.set(newValue, forKey: "isBatteryOff")
             preferences.synchronize()
         }
     }
-
+    
     var isTemperatureOff: Bool {
         get {
-            return preferences.boolForKey("isTemperatureOff")
+            return preferences.bool(forKey: "isTemperatureOff")
         }
         set (newValue) {
-            preferences.setBool(newValue, forKey: "isTemperatureOff")
+            preferences.set(newValue, forKey: "isTemperatureOff")
             preferences.synchronize()
         }
     }
-
+    
     var isHumidityOff: Bool {
         get {
-            return preferences.boolForKey("isHumidityOff")
+            return preferences.bool(forKey: "isHumidityOff")
         }
         set (newValue) {
-            preferences.setBool(newValue, forKey: "isHumidityOff")
+            preferences.set(newValue, forKey: "isHumidityOff")
             preferences.synchronize()
         }
     }
     
     var isPressureOff: Bool {
         get {
-            return preferences.boolForKey("isPressureOff")
+            return preferences.bool(forKey: "isPressureOff")
         }
         set (newValue) {
-            preferences.setBool(newValue, forKey: "isPressureOff")
+            preferences.set(newValue, forKey: "isPressureOff")
             preferences.synchronize()
         }
     }
     
     var isLightOff: Bool {
         get {
-            return preferences.boolForKey("isLightOff")
+            return preferences.bool(forKey: "isLightOff")
         }
         set (newValue) {
-            preferences.setBool(newValue, forKey: "isLightOff")
+            preferences.set(newValue, forKey: "isLightOff")
             preferences.synchronize()
         }
     }
     
     var isAcceleratorOff: Bool {
         get {
-            return preferences.boolForKey("isAcceleratorOff")
+            return preferences.bool(forKey: "isAcceleratorOff")
         }
         set (newValue) {
-            preferences.setBool(newValue, forKey: "isAcceleratorOff")
+            preferences.set(newValue, forKey: "isAcceleratorOff")
             preferences.synchronize()
         }
     }
     
     var isMagnetometerOff: Bool {
         get {
-            return preferences.boolForKey("isMagnetometerOff")
+            return preferences.bool(forKey: "isMagnetometerOff")
         }
         set (newValue) {
-            preferences.setBool(newValue, forKey: "isMagnetometerOff")
+            preferences.set(newValue, forKey: "isMagnetometerOff")
             preferences.synchronize()
         }
     }
     
     var isGyroOff: Bool {
         get {
-            return preferences.boolForKey("isGyroOff")
+            return preferences.bool(forKey: "isGyroOff")
         }
         set (newValue) {
-            preferences.setBool(newValue, forKey: "isGyroOff")
+            preferences.set(newValue, forKey: "isGyroOff")
             preferences.synchronize()
         }
     }
     
     var isStepsOff: Bool {
         get {
-            return preferences.boolForKey("isStepsOff")
+            return preferences.bool(forKey: "isStepsOff")
         }
         set (newValue) {
-            preferences.setBool(newValue, forKey: "isStepsOff")
+            preferences.set(newValue, forKey: "isStepsOff")
             preferences.synchronize()
         }
     }
-
+    
     var isCaloriesOff: Bool {
         get {
-            return preferences.boolForKey("isCaloriesOff")
+            return preferences.bool(forKey: "isCaloriesOff")
         }
         set (newValue) {
-            preferences.setBool(newValue, forKey: "isCaloriesOff")
+            preferences.set(newValue, forKey: "isCaloriesOff")
             preferences.synchronize()
         }
     }
-
+    
     var isHeartRateOff: Bool {
         get {
-            return preferences.boolForKey("isHeartRateOff")
+            return preferences.bool(forKey: "isHeartRateOff")
         }
         set (newValue) {
-            preferences.setBool(newValue, forKey: "isHeartRateOff")
+            preferences.set(newValue, forKey: "isHeartRateOff")
             preferences.synchronize()
         }
     }
     
     var heartbeat: Int {
         get {
-            return preferences.integerForKey("heartbeat")
+            return preferences.integer(forKey: "heartbeat")
         }
         set (newValue) {
-            preferences.setInteger(newValue, forKey: "heartbeat")
+            preferences.set(newValue, forKey: "heartbeat")
             preferences.synchronize()
         }
     }
@@ -444,7 +444,7 @@ class TrackingDevice {
     
     func isHeartbeatIntervalReached() -> Bool {
         guard let lastPublished = lastPublished else { return true }
-
+        
         let lastPublishedTimeInterval = lastPublished.timeIntervalSinceNow
         let timeSinceUpdate = (-1 * lastPublishedTimeInterval)
         var timeTrigger = Double(heartbeat)
@@ -454,27 +454,27 @@ class TrackingDevice {
         }
         
         return timeSinceUpdate >= timeTrigger
-            
+        
     }
     
     
     // Convert string of mappings to array of mappings
     //example: serialsString = "hexi1,wolk1|hexi2,wolk2|hexi3,wolk3|hexi4,wolk4"
     // to [{hexi1,wolk1},{hexi2,wolk2}...]
-    func serialsStringToHexiAndWolkCombination(serialsString: String) -> [SerialMapping] {
+    func serialsStringToHexiAndWolkCombination(_ serialsString: String) -> [SerialMapping] {
         guard serialsString.characters.count > 0 else { return [] }
         
-        let serials = serialsString.componentsSeparatedByString("|")
+        let serials = serialsString.components(separatedBy: "|")
         let serialsMapping = serials.map { serialsJoined -> SerialMapping in
-            let twoSerialsAndPassword = serialsJoined.componentsSeparatedByString(",")
+            let twoSerialsAndPassword = serialsJoined.components(separatedBy: ",")
             return SerialMapping(hexiSerial: twoSerialsAndPassword[0], wolkSerial: twoSerialsAndPassword[1], wolkPassword: twoSerialsAndPassword[2])
         }
         
         return serialsMapping
     }
-
+    
     // Convert array of mappings to string of mappings
-    func hexiAndWolkCombinationToString(hexiAndWolk: [SerialMapping]) -> String {
+    func hexiAndWolkCombinationToString(_ hexiAndWolk: [SerialMapping]) -> String {
         guard hexiAndWolk.count > 0 else { return "" }
         
         let start = ""
@@ -487,7 +487,7 @@ class TrackingDevice {
     }
     
     // Find hexi serial in list of mappings and return wolk serial
-    func findHexiAndWolkCombination(hexiToFind: String, hexiAndWolkSerials: [SerialMapping]) -> String? {
+    func findHexiAndWolkCombination(_ hexiToFind: String, hexiAndWolkSerials: [SerialMapping]) -> String? {
         guard hexiToFind.characters.count > 0 else { print("no hexi"); return nil }
         
         for mapping in hexiAndWolkSerials {
@@ -495,9 +495,9 @@ class TrackingDevice {
         }
         return nil
     }
-
+    
     // Find hexi serial in list of mappings and return wolk serial and password
-    func findWolkCredentials(hexiToFind: String, hexiAndWolkSerials: [SerialMapping]) -> (String?, String?) {
+    func findWolkCredentials(_ hexiToFind: String, hexiAndWolkSerials: [SerialMapping]) -> (String?, String?) {
         guard hexiToFind.characters.count > 0 else { print("no hexi"); return (nil,nil) }
         
         for mapping in hexiAndWolkSerials {
@@ -505,7 +505,7 @@ class TrackingDevice {
         }
         return (nil, nil)
     }
-
+    
 }
 
 // Mapping structure

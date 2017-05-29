@@ -22,6 +22,7 @@
 //
 
 import UIKit
+import JGProgressHUD
 
 protocol HexiwearSettingsDelegate {
     func didSignOut()
@@ -32,16 +33,16 @@ class SettingaBaseTableViewController: UITableViewController {
     @IBOutlet weak var userAccountLabel: UILabel!
     @IBOutlet weak var sendToCloudSwitch: UISwitch!
     @IBOutlet weak var sendEvery: UISegmentedControl!
- 
+    
     var delegate: HexiwearSettingsDelegate?
     var trackingDevice: TrackingDevice!
     var dataStore: DataStore!
-    let progressHUD = JGProgressHUD(style: .Dark)
+    let progressHUD = JGProgressHUD(style: .dark)
     var isDemoUser = false
-
-    override func viewWillAppear(animated: Bool) {
+    
+    override func viewWillAppear(_ animated: Bool) {
         userAccountLabel.text = trackingDevice.userAccount
-        sendToCloudSwitch.on = !trackingDevice.trackingIsOff ?? true
+        sendToCloudSwitch.isOn = !trackingDevice.trackingIsOff
         
         let heartbeat = trackingDevice.heartbeat
         if heartbeat == 5 {
@@ -59,63 +60,62 @@ class SettingaBaseTableViewController: UITableViewController {
         
     }
     
-    private func logOut() {
+    fileprivate func logOut() {
         let msg: String = "Sign out?"
-        let alert = UIAlertController(title: applicationTitle, message: msg, preferredStyle: UIAlertControllerStyle.Alert)
+        let alert = UIAlertController(title: applicationTitle, message: msg, preferredStyle: UIAlertControllerStyle.alert)
         
-        let remove = UIAlertAction(title: "Sign out", style: UIAlertActionStyle.Default) { action in
+        let remove = UIAlertAction(title: "Sign out", style: .destructive) { action in
             self.delegate?.didSignOut()
         }
         
-        let cancel = UIAlertAction(title: "Cancel", style: UIAlertActionStyle.Default) { action in
-            alert.dismissViewControllerAnimated(true, completion: nil)
+        let cancel = UIAlertAction(title: "Cancel", style: .cancel) { action in
+            alert.dismiss(animated: true, completion: nil)
         }
         
         alert.addAction(remove)
         alert.addAction(cancel)
         
-        presentViewController(alert, animated: true, completion: nil)
+        present(alert, animated: true, completion: nil)
     }
     
-    @IBAction func sendToCloud(sender: AnyObject) {
-        trackingDevice.trackingIsOff = !sendToCloudSwitch.on
+    @IBAction func sendToCloud(_ sender: AnyObject) {
+        trackingDevice.trackingIsOff = !sendToCloudSwitch.isOn
         tableView.reloadData()
     }
-
-    @IBAction func sendEveryChanged(sender: UISegmentedControl) {
+    
+    @IBAction func sendEveryChanged(_ sender: UISegmentedControl) {
         switch sendEvery.selectedSegmentIndex {
-            case 0: trackingDevice.heartbeat = 5
-            case 1: trackingDevice.heartbeat = 60
-            case 2: trackingDevice.heartbeat = 300
-            default: trackingDevice.heartbeat = 5
+        case 0: trackingDevice.heartbeat = 5
+        case 1: trackingDevice.heartbeat = 60
+        case 2: trackingDevice.heartbeat = 300
+        default: trackingDevice.heartbeat = 5
         }
     }
     
-    @IBAction func doneAction(sender: UIBarButtonItem) {
-        dismissViewControllerAnimated(true, completion: nil)
+    @IBAction func doneAction(_ sender: UIBarButtonItem) {
+        dismiss(animated: true, completion: nil)
     }
-
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+        tableView.deselectRow(at: indexPath, animated: true)
         if indexPath.section == 0  && indexPath.row == 0 { // log out
             logOut()
         }
         else if indexPath.section == 0 && indexPath.row == 1 { // change password
-            performSegueWithIdentifier("toChangePasswordBase", sender: nil)
+            performSegue(withIdentifier: "toChangePasswordBase", sender: nil)
         }
     }
     
-    override func prepareForSegue(segue: UIStoryboardSegue, sender: AnyObject?) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == "toChangePasswordBase" {
-            if let vc = segue.destinationViewController as? ChangePasswordTableViewController {
+            if let vc = segue.destination as? ChangePasswordTableViewController {
                 vc.dataStore = self.dataStore
-                vc.userEmail = trackingDevice.userAccount
             }
         }
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         // only show user account for demo user
         if isDemoUser {
             if indexPath.section == 0 && indexPath.row == 0 {
@@ -132,7 +132,7 @@ class SettingaBaseTableViewController: UITableViewController {
         return 44.0
     }
     
-    override func tableView(tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
         if section == 0 {
             return "Signed in"
         }
@@ -142,7 +142,7 @@ class SettingaBaseTableViewController: UITableViewController {
         return nil
     }
     
-    override func tableView(tableView: UITableView, titleForFooterInSection section: Int) -> String? {
+    override func tableView(_ tableView: UITableView, titleForFooterInSection section: Int) -> String? {
         if section == 0 {
             return "Tap on email to sign out"
         }
@@ -204,23 +204,23 @@ class HexiSettingsTableViewController: UITableViewController {
     var delegate: HexiwearSettingsDelegate?
     var trackingDevice: TrackingDevice!
     var dataStore: DataStore!
-    let progressHUD = JGProgressHUD(style: .Dark)
-
-    override func viewWillAppear(animated: Bool) {
+    let progressHUD = JGProgressHUD(style: .dark)
+    
+    override func viewWillAppear(_ animated: Bool) {
         
         super.viewWillAppear(animated)
         
-        batterySwitch.on = !trackingDevice.isBatteryOff ?? true
-        temperatureSwitch.on = !trackingDevice.isTemperatureOff ?? true
-        humiditySwitch.on = !trackingDevice.isHumidityOff ?? true
-        pressureSwitch.on = !trackingDevice.isPressureOff ?? true
-        lightSwitch.on = !trackingDevice.isLightOff ?? true
-        acceleratorSwitch.on = !trackingDevice.isAcceleratorOff ?? true
-        magnetometerSwitch.on = !trackingDevice.isMagnetometerOff ?? true
-        gyroSwitch.on = !trackingDevice.isGyroOff ?? true
-        stepsSwitch.on = !trackingDevice.isStepsOff ?? true
-        caloriesSwitch.on = !trackingDevice.isCaloriesOff ?? true
-        heartrateSwitch.on = !trackingDevice.isHeartRateOff ?? true
+        batterySwitch.isOn = !trackingDevice.isBatteryOff
+        temperatureSwitch.isOn = !trackingDevice.isTemperatureOff
+        humiditySwitch.isOn = !trackingDevice.isHumidityOff
+        pressureSwitch.isOn = !trackingDevice.isPressureOff
+        lightSwitch.isOn = !trackingDevice.isLightOff
+        acceleratorSwitch.isOn = !trackingDevice.isAcceleratorOff
+        magnetometerSwitch.isOn = !trackingDevice.isMagnetometerOff
+        gyroSwitch.isOn = !trackingDevice.isGyroOff
+        stepsSwitch.isOn = !trackingDevice.isStepsOff
+        caloriesSwitch.isOn = !trackingDevice.isCaloriesOff
+        heartrateSwitch.isOn = !trackingDevice.isHeartRateOff
         manufacturerLabel.text = deviceInfo.manufacturer
         firmwareRevision.text = deviceInfo.firmwareRevision
         
@@ -228,111 +228,111 @@ class HexiSettingsTableViewController: UITableViewController {
         
         availableReadings = HexiwearMode.getReadingsForMode(mode)
         
-        batterySwitch.enabled = availableReadings.contains(.BATTERY)
-        temperatureSwitch.enabled = availableReadings.contains(.TEMPERATURE)
-        humiditySwitch.enabled = availableReadings.contains(.HUMIDITY)
-        pressureSwitch.enabled = availableReadings.contains(.PRESSURE)
-        lightSwitch.enabled = availableReadings.contains(.LIGHT)
-        acceleratorSwitch.enabled = availableReadings.contains(.ACCELEROMETER)
-        magnetometerSwitch.enabled = availableReadings.contains(.MAGNETOMETER)
-        gyroSwitch.enabled = availableReadings.contains(.GYRO)
-        stepsSwitch.enabled = availableReadings.contains(.PEDOMETER)
-        caloriesSwitch.enabled = availableReadings.contains(.CALORIES)
-        heartrateSwitch.enabled = availableReadings.contains(.HEARTRATE)
+        batterySwitch.isEnabled = availableReadings.contains(.battery)
+        temperatureSwitch.isEnabled = availableReadings.contains(.temperature)
+        humiditySwitch.isEnabled = availableReadings.contains(.humidity)
+        pressureSwitch.isEnabled = availableReadings.contains(.pressure)
+        lightSwitch.isEnabled = availableReadings.contains(.light)
+        acceleratorSwitch.isEnabled = availableReadings.contains(.accelerometer)
+        magnetometerSwitch.isEnabled = availableReadings.contains(.magnetometer)
+        gyroSwitch.isEnabled = availableReadings.contains(.gyro)
+        stepsSwitch.isEnabled = availableReadings.contains(.pedometer)
+        caloriesSwitch.isEnabled = availableReadings.contains(.calories)
+        heartrateSwitch.isEnabled = availableReadings.contains(.heartrate)
         
         batteryCellImageView?.image = UIImage(named: "battery")
         batteryCellImageView?.alpha = 0.6
-        batteryCellImageView?.contentMode = .ScaleAspectFit
+        batteryCellImageView?.contentMode = .scaleAspectFit
         temperatureCellImageView?.image = UIImage(named: "temperature")
         temperatureCellImageView?.alpha = 0.6
-        temperatureCellImageView?.contentMode = .ScaleAspectFit
+        temperatureCellImageView?.contentMode = .scaleAspectFit
         humidityCellImageView?.image = UIImage(named: "humidity")
         humidityCellImageView?.alpha = 0.6
-        humidityCellImageView?.contentMode = .ScaleAspectFit
+        humidityCellImageView?.contentMode = .scaleAspectFit
         pressureCellImageView?.image = UIImage(named: "pressure")
         pressureCellImageView?.alpha = 0.6
-        pressureCellImageView?.contentMode = .ScaleAspectFit
+        pressureCellImageView?.contentMode = .scaleAspectFit
         lightCellImageView?.image = UIImage(named: "light_icon")
         lightCellImageView?.alpha = 0.6
-        lightCellImageView?.contentMode = .ScaleAspectFit
+        lightCellImageView?.contentMode = .scaleAspectFit
         accCellImageView?.image = UIImage(named: "accelerometer")
         accCellImageView?.alpha = 0.6
-        accCellImageView?.contentMode = .ScaleAspectFit
+        accCellImageView?.contentMode = .scaleAspectFit
         magnetCellImageView?.image = UIImage(named: "magnet_icon")
         magnetCellImageView?.alpha = 0.6
-        magnetCellImageView?.contentMode = .ScaleAspectFit
+        magnetCellImageView?.contentMode = .scaleAspectFit
         gyroCellImageView?.image = UIImage(named: "gyroscope")
         gyroCellImageView?.alpha = 0.6
-        gyroCellImageView?.contentMode = .ScaleAspectFit
+        gyroCellImageView?.contentMode = .scaleAspectFit
         stepsCellImageView?.image = UIImage(named: "steps_icon")
         stepsCellImageView?.alpha = 0.6
-        stepsCellImageView?.contentMode = .ScaleAspectFit
+        stepsCellImageView?.contentMode = .scaleAspectFit
         caloriesImageView.image = UIImage(named: "calories")
         caloriesImageView.alpha = 0.6
-        caloriesImageView.contentMode = .ScaleAspectFit
+        caloriesImageView.contentMode = .scaleAspectFit
         heartrateImageView.image = UIImage(named: "heartbeat_icon")
         heartrateImageView.alpha = 0.6
-        heartrateImageView.contentMode = .ScaleAspectFit
-
+        heartrateImageView.contentMode = .scaleAspectFit
+        
         tableView.reloadData()
     }
     
-    @IBAction func doneAction(sender: UIBarButtonItem) {
-        dismissViewControllerAnimated(true, completion: nil)
-    }
-
-    @IBAction func batterySwitchAction(sender: AnyObject) {
-        trackingDevice.isBatteryOff = !batterySwitch.on
+    @IBAction func doneAction(_ sender: UIBarButtonItem) {
+        dismiss(animated: true, completion: nil)
     }
     
-    @IBAction func weatherSwitchAction(sender: AnyObject) {
-        trackingDevice.isTemperatureOff = !temperatureSwitch.on
+    @IBAction func batterySwitchAction(_ sender: AnyObject) {
+        trackingDevice.isBatteryOff = !batterySwitch.isOn
     }
     
-    @IBAction func humiditySwitchAction(sender: UISwitch) {
-        trackingDevice.isHumidityOff = !humiditySwitch.on
+    @IBAction func weatherSwitchAction(_ sender: AnyObject) {
+        trackingDevice.isTemperatureOff = !temperatureSwitch.isOn
     }
     
-    @IBAction func pressureSwitchAction(sender: UISwitch) {
-        trackingDevice.isPressureOff = !pressureSwitch.on
+    @IBAction func humiditySwitchAction(_ sender: UISwitch) {
+        trackingDevice.isHumidityOff = !humiditySwitch.isOn
     }
     
-    @IBAction func lightSwitchAction(sender: UISwitch) {
-        trackingDevice.isLightOff = !lightSwitch.on
+    @IBAction func pressureSwitchAction(_ sender: UISwitch) {
+        trackingDevice.isPressureOff = !pressureSwitch.isOn
     }
     
-    @IBAction func acceleratorSwitchAction(sender: AnyObject) {
-        trackingDevice.isAcceleratorOff = !acceleratorSwitch.on
+    @IBAction func lightSwitchAction(_ sender: UISwitch) {
+        trackingDevice.isLightOff = !lightSwitch.isOn
     }
     
-    @IBAction func magnetometerSwitchAction(sender: AnyObject) {
-        trackingDevice.isMagnetometerOff = !magnetometerSwitch.on
+    @IBAction func acceleratorSwitchAction(_ sender: AnyObject) {
+        trackingDevice.isAcceleratorOff = !acceleratorSwitch.isOn
     }
     
-    @IBAction func gyroSwitchAction(sender: AnyObject) {
-        trackingDevice.isGyroOff = !gyroSwitch.on
+    @IBAction func magnetometerSwitchAction(_ sender: AnyObject) {
+        trackingDevice.isMagnetometerOff = !magnetometerSwitch.isOn
     }
     
-    @IBAction func stepsSwitchAction(sender: AnyObject) {
-        trackingDevice.isStepsOff = !stepsSwitch.on
+    @IBAction func gyroSwitchAction(_ sender: AnyObject) {
+        trackingDevice.isGyroOff = !gyroSwitch.isOn
     }
     
-    @IBAction func caloriesSwitchAction(sender: UISwitch) {
-        trackingDevice.isCaloriesOff = !caloriesSwitch.on
-    }
-
-    @IBAction func heartrateSwitchAction(sender: UISwitch) {
-        trackingDevice.isHeartRateOff = !heartrateSwitch.on
+    @IBAction func stepsSwitchAction(_ sender: AnyObject) {
+        trackingDevice.isStepsOff = !stepsSwitch.isOn
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
-        tableView.deselectRowAtIndexPath(indexPath, animated: true)
+    @IBAction func caloriesSwitchAction(_ sender: UISwitch) {
+        trackingDevice.isCaloriesOff = !caloriesSwitch.isOn
+    }
+    
+    @IBAction func heartrateSwitchAction(_ sender: UISwitch) {
+        trackingDevice.isHeartRateOff = !heartrateSwitch.isOn
+    }
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
         if indexPath.section == 1  && indexPath.row == 0 { // set time
             setTime()
         }
     }
     
-    private func setTime() {
+    fileprivate func setTime() {
         delegate?.didSetTime()
     }
     
@@ -340,28 +340,28 @@ class HexiSettingsTableViewController: UITableViewController {
 
 extension HexiSettingsTableViewController: HexiwearTimeSettingDelegate {
     func didStartSettingTime() {
-        let time = NSDate()
-        let formatter = NSDateFormatter()
-        formatter.dateStyle = .MediumStyle
-        formatter.timeStyle = .ShortStyle
+        let time = Date()
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
         
-        let datetimestring = formatter.stringFromDate(time)
-        progressHUD.textLabel.text = "Setting time on HEXIWEAR to \(datetimestring)"
-        progressHUD.showInView(self.view, animated: true)
+        let datetimestring = formatter.string(from: time)
+        progressHUD?.textLabel.text = "Setting time on HEXIWEAR to \(datetimestring)"
+        progressHUD?.show(in: self.view, animated: true)
         
     }
     
-    func didFinishSettingTime(success: Bool) {
+    func didFinishSettingTime(_ success: Bool) {
         delay(1.0) {
             if success {
-                self.progressHUD.textLabel.text = "Time set successfully!"
+                self.progressHUD?.textLabel.text = "Time set successfully!"
             }
             else {
-                self.progressHUD.textLabel.text = "Failure setting time!"
+                self.progressHUD?.textLabel.text = "Failure setting time!"
             }
         }
         delay(2.0) {
-            self.progressHUD.dismiss()
+            self.progressHUD?.dismiss()
         }
         
     }

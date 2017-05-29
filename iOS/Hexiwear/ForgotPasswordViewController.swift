@@ -28,11 +28,11 @@ protocol ForgotPasswordDelegate {
 }
 
 class ForgotPasswordViewController: SingleTextViewController {
-
+    
     var forgotPasswordDelegate: ForgotPasswordDelegate?
     @IBOutlet weak var emailText: UITextField!
     @IBOutlet weak var errorLabel: UILabel!
-
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -42,46 +42,61 @@ class ForgotPasswordViewController: SingleTextViewController {
         emailText.delegate = self
         emailText.text = ""
         title = "Reset password"
-        errorLabel.hidden = true
+        errorLabel.isHidden = true
     }
     
     override func toggleActivateButtonEnabled() {
-        if let em = emailText.text where isValidEmailAddress(em) {
-            actionButton.enabled = true
+        if let em = emailText.text, isValidEmailAddress(em) {
+            actionButton.isEnabled = true
         }
         else {
-            actionButton.enabled = false
+            actionButton.isEnabled = false
         }
     }
     
     override func actionButtonAction() {
         dataStore.resetPasswordForUserEmail(emailText.text!,
-            onFailure: { _ in
-                dispatch_async(dispatch_get_main_queue()) {
-                    self.errorLabel.hidden = false
+                                            onFailure: handleResetFail(reason:),
+                                            onSuccess: {
+                                                showSimpleAlertWithTitle(applicationTitle, message: "Check your email for new password.", viewController: self, OKhandler: { _ in self.forgotPasswordDelegate?.didFinishResettingPassword()
+                                                })
+        }
+        )
+    }
+    
+    func handleResetFail(reason: Reason) {
+        switch reason {
+        case .noSuccessStatusCode(let statusCode, _):
+            guard statusCode != BAD_REQUEST && statusCode != NOT_AUTHORIZED else {
+                DispatchQueue.main.async {
+                    showSimpleAlertWithTitle(applicationTitle, message: "There is no account registered with provided email.", viewController: self)
                     self.view.setNeedsDisplay()
                 }
-            },
-            onSuccess: {
-                showSimpleAlertWithTitle(applicationTitle, message: "Check your email for new password.", viewController: self, OKhandler: { _ in self.forgotPasswordDelegate?.didFinishResettingPassword()
-                })
+                return
             }
-        )
+            
+            fallthrough
+        default:
+            DispatchQueue.main.async {
+                showSimpleAlertWithTitle(applicationTitle, message: "There was a problem resetting your password. Please try again or contact our support.", viewController: self)
+                self.view.setNeedsDisplay()
+            }
+        }
     }
     
     override func skipButtonAction() {
         forgotPasswordDelegate?.didFinishResettingPassword()
     }
     
-    @IBAction func emailChanged(sender: UITextField) {
+    @IBAction func emailChanged(_ sender: UITextField) {
         toggleActivateButtonEnabled()
-        errorLabel.hidden = true
+        errorLabel.isHidden = true
         self.view.setNeedsDisplay()
     }
 }
 
 extension ForgotPasswordViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
         return true
     }
