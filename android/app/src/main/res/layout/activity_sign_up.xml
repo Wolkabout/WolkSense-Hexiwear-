@@ -1,4 +1,5 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -35,49 +36,62 @@
                     android:layout_gravity="center_horizontal"
                     android:layout_marginBottom="16dp"
                     android:layout_marginTop="16dp"
-                    android:src="@drawable/logo" />
+                    android:src="@drawable/logo"/>
 
                 <com.wolkabout.hexiwear.view.Input_
                     android:id="@+id/emailField"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:errorTextAppearance="@style/DarkerErrorAppearance"
                     app:hint="@string/registration_email_hint"
                     app:textColor="@color/white"
-                    app:type="email" />
+                    app:type="email"/>
 
                 <com.wolkabout.hexiwear.view.Input_
                     android:id="@+id/passwordField"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:errorTextAppearance="@style/DarkerErrorAppearance"
                     app:hint="@string/registration_password_hint"
                     app:textColor="@color/white"
-                    app:type="password" />
+                    app:type="password"/>
+
+                <com.wolkabout.hexiwear.view.Input_
+                    android:id="@+id/confirmPasswordField"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:errorTextAppearance="@style/DarkerErrorAppearance"
+                    app:hint="@string/registration_confirm_password_hint"
+                    app:textColor="@color/white"
+                    app:type="password"/>
 
                 <com.wolkabout.hexiwear.view.Input_
                     android:id="@+id/firstNameField"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:errorTextAppearance="@style/DarkerErrorAppearance"
                     app:hint="@string/registration_first_name"
                     app:textColor="@color/white"
-                    app:type="name" />
+                    app:type="name"/>
 
                 <com.wolkabout.hexiwear.view.Input_
                     android:id="@+id/lastNameField"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    app:errorTextAppearance="@style/DarkerErrorAppearance"
                     app:hint="@string/registration_last_name"
                     app:textColor="@color/white"
-                    app:type="name" />
+                    app:type="name"/>
 
                 <TextView
                     android:id="@+id/privacyPolicy"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    android:textSize="16sp"
                     android:layout_marginTop="24dp"
                     android:text="@string/registration_privacy_policy"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    android:textSize="16sp"/>
 
                 <TextView
                     android:id="@+id/licenceTerms"
@@ -85,9 +99,9 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
                     android:layout_marginTop="16dp"
-                    android:textSize="16sp"
                     android:text="@string/registration_terms_and_conditions"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"
+                    android:textSize="16sp"/>
 
                 <CheckBox
                     android:id="@+id/termsAndConditions"
@@ -95,33 +109,33 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:text="@string/registration_accept_privacy_and_terms"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"/>
 
                 <Button
                     android:id="@+id/signUpButton"
+                    style="@style/Base.Widget.AppCompat.Button.Borderless"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
                     android:layout_marginTop="@dimen/min_margin"
-                    android:background="@android:color/transparent"
-                    android:gravity="end"
+                    android:gravity="center"
                     android:text="@string/login_registration"
-                    android:textColor="@color/white" />
+                    android:textColor="@color/white"/>
 
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/signingUp"
-                android:visibility="gone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:visibility="gone">
 
                 <ProgressBar
                     android:id="@+id/progressBar"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
+                    android:layout_height="wrap_content"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -129,7 +143,7 @@
                     android:layout_gravity="center_vertical"
                     android:elevation="25dp"
                     android:text="@string/registration_signing_up"
-                    android:textAppearance="?android:attr/textAppearanceMediumInverse" />
+                    android:textAppearance="?android:attr/textAppearanceMediumInverse"/>
 
             </LinearLayout>
 

@@ -18,16 +18,20 @@
     <string name="login_registration">Sign up</string>
     <string name="login_register_hint">Don\'t have an account yet?</string>
     <string name="login_signing_in">Signing In</string>
-    <string name="login_error_invalid_credentials">Provided email/password combination is not recognized.</string>
+    <string name="login_error_invalid_credentials">The email address or password you entered did not match our records. Please enter valid credentials.</string>
+    <string name="login_error_general">There was a problem signing you in. Please try again or contact our support.</string>
 
     <!--REGISTRATION-->
-    <string name="registration_email_hint">email</string>
-    <string name="registration_password_hint">password</string>
+    <string name="registration_email_hint">Email</string>
+    <string name="registration_password_hint">Password</string>
     <string name="registration_first_name">First Name</string>
     <string name="registration_last_name">Last Name</string>
-    <string name="registration_error_field_required">This field is required.</string>
-    <string name="registration_error_invalid_password">Password must have 8 or more characters.</string>
-    <string name="registration_error_invalid_email">Input is not a valid email.</string>
+    <string name="registration_error_email_required">Please enter your email address.</string>
+    <string name="registration_error_password_required">Please enter your password.</string>
+    <string name="registration_error_short_password">Password must be at least 8 characters long.</string>
+    <string name="registration_error_invalid_email">Please enter a valid email address.</string>
+    <string name="registration_error_first_name_required">Please enter your first name.</string>
+    <string name="registration_error_last_name_required">Please enter your last name.</string>
     <string name="registration_activity_title">Registration</string>
     <string name="registration_success">Thank you for signing up. You will receive an email from us with further instructions how to access your account.</string>
     <string name="registration_error_all_fields_required">Please fill in all the registration fields.</string>
@@ -37,15 +41,29 @@
     <string name="registration_privacy_policy">See <a href="https://wolksense.com/documents/privacypolicy.html">privacy policy</a>.</string>
     <string name="registration_terms_and_conditions">See <a href="https://wolksense.com/documents/termsofservice.html">Terms &amp; Conditions</a>.</string>
     <string name="registration_signing_up">Signing Up</string>
+    <string name="registration_confirm_password_hint">Confirm password</string>
+    <string name="registration_password_mismatch_error">Please enter the same password as above</string>
+    <string name="registration_confirm_password_error">Please confirm your password</string>
+    <string name="registration_error_email_already_exists">Account with provided email address already exists.</string>
 
     <!--MAIN ACTIVITY-->
     <string name="discovery_available_devices">Available devices</string>
     <string name="discovery_scanning">Scanning…</string>
-    <string name="discovery_bonding">Bonding device. Please wait…</string>
+    <string name="discovery_pairing">Pairing device. Please wait…</string>
     <string name="discovery_otap">OTAP</string>
-    <string name="discovery_bonded">(Bonded)</string>
+    <string name="discovery_paired">(Paired)</string>
     <string name="discovery_change_password">Change password</string>
     <string name="discovery_sign_out">Sign out</string>
+    <string name="discovery_pairing_notification">Click on the pairing notification to pair with the device.</string>
+    <string name="discovery_pairing_successful">Pairing successful</string>
+    <string name="discovery_empty_list">No devices found, swipe down to refresh.</string>
+    <string name="discovery_failed_to_pair">Failed to pair with the device, please try again.</string>
+
+    <string name="unpair_message">Are you sure you want to unpair device?</string>
+    <string name="device_unpaired">Device unpaired.</string>
+    <string name="failed_to_unpair">Failed to unpair device.</string>
+
+    <string name="sure_want_to_quit">Are you sure you want to close the application?</string>
 
     <!--ACTIVATION DIALOG-->
     <string name="activation_dialog_title">Activate this Hexiwear as:</string>
@@ -64,6 +82,11 @@
     <string name="readings_option_set_clock">Set Clock</string>
     <string name="readings_option_toggle_tracking">Toggle tracking</string>
     <string name="readings_option_firmware_update">Firmware update</string>
+    <string name="readings_option_unpair">Unpair</string>
+    <string name="readings_unpairing">Unpairing</string>
+    <string name="readings_time_set_success">Time set successfully.</string>
+    <string name="readings_time_set_fail">Failed to set time.</string>
+    <string name="readings_setting_time">Setting time …</string>
 
     <!--SETTINGS-->
     <string name="preferences_activity_title">Settings</string>
@@ -88,6 +111,10 @@
     <string name="preferences_publish_key">publishToCloud</string>
     <string name="preferences_publish">Publish to cloud</string>
     <string name="preferences_keep_alive_summary">App will maintain connection to hexiwear when closed.</string>
+    <string name="preferences_app_version">appVersion</string>
+    <string name="preferences_app_version_title">Application version</string>
+    <string name="preferences_firmware_version_title">Firmware version</string>
+    <string name="preferences_manufacturer_title">Manufacturer</string>
 
     <!--FIRMWARE UPDATE-->
     <string name="firmware_update_activity_title">Firmware update</string>
@@ -106,7 +133,8 @@
     <string name="reset_password_email">Email</string>
     <string name="reset_password_button">Reset password</string>
     <string name="reset_password_success">The reset password link has been sent to provided email.</string>
-    <string name="reset_password_error">No such email</string>
+    <string name="reset_password_error">There was a problem resetting your password. Please try again or contact our support.</string>
+    <string name="reset_password_no_such_email_error">There is no account registered with provided email</string>
 
     <!--READING MODS-->
     <string name="mode_idle">Connected as: Idle</string>
@@ -123,7 +151,14 @@
     <string name="change_password_current_password">Current password</string>
     <string name="change_password_new_password">New password</string>
     <string name="change_password_success">Password successfully changed.</string>
-    <string name="change_password_error">There was an error while changing password.</string>
+    <string name="change_password_error">There was a problem changing your password. Please try again or contact our support.</string>
     <string name="change_password_header">Password change</string>
+    <string name="change_password_new_password_required_error">Please enter new password.</string>
+    <string name="change_password_confirm_password">Confirm password</string>
+    <string name="change_password_current_is_empty_error">Please enter your current password.</string>
+    <string name="change_password_new_password_length_error">New password must be at least 8 characters long.</string>
+    <string name="change_password_confirm_is_empty_error">Please confirm your new password.</string>
+    <string name="change_password_mismatch_error">Please enter the same new password and confirm new password.</string>
+    <string name="change_password_old_invalid">Please enter a valid old password and try again.</string>
 
 </resources>

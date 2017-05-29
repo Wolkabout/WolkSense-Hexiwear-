@@ -1,22 +1,21 @@
 /**
- *  Hexiwear application is used to pair with Hexiwear BLE devices
- *  and send sensor readings to WolkSense sensor data cloud
- *
- *  Copyright (C) 2016 WolkAbout Technology s.r.o.
- *
- *  Hexiwear is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  Hexiwear is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Hexiwear application is used to pair with Hexiwear BLE devices
+ * and send sensor readings to WolkSense sensor data cloud
+ * <p>
+ * Copyright (C) 2016 WolkAbout Technology s.r.o.
+ * <p>
+ * Hexiwear is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * <p>
+ * Hexiwear is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.wolkabout.hexiwear.service;
@@ -39,7 +38,9 @@ import android.os.IBinder;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
+import android.widget.Toast;
 
+import com.wolkabout.hexiwear.BuildConfig;
 import com.wolkabout.hexiwear.R;
 import com.wolkabout.hexiwear.activity.MainActivity_;
 import com.wolkabout.hexiwear.activity.ReadingsActivity_;
@@ -59,6 +60,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EService;
 import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.SystemService;
+import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 
 import java.nio.ByteBuffer;
@@ -91,6 +93,9 @@ public class BluetoothService extends Service {
     public static final String SHOULD_PUBLISH_CHANGED = "shouldPublishChanged";
     public static final String MODE_CHANGED = "modeChanged";
     public static final String MODE = "mode";
+    public static final String BLUETOOTH_SERVICE_STOPPED = "BLUETOOTH_SERVICE_STOPPED";
+    public static final String SHOW_TIME_PROGRESS = "SHOW_TIME_PROGRESS";
+    public static final String HIDE_TIME_PROGRESS = "HIDE_TIME_PROGRESS";
 
     // Notification types
     private static final byte MISSED_CALLS = 2;
@@ -106,6 +111,7 @@ public class BluetoothService extends Service {
     private static final Queue<String> readingQueue = new ArrayBlockingQueue<>(12);
     private static final Queue<byte[]> notificationsQueue = new LinkedBlockingDeque<>();
 
+    private volatile boolean shouldUpdateTime;
     private volatile boolean isConnected;
     private BluetoothDevice bluetoothDevice;
     private HexiwearDevice hexiwearDevice;
@@ -156,6 +162,10 @@ public class BluetoothService extends Service {
         if (wolk != null && hexiwearDevices.shouldTransmit(hexiwearDevice)) {
             wolk.stopAutoPublishing();
         }
+
+        Log.d(TAG, "onDestroy: sending intent that bt service stopped");
+        final Intent intent = new Intent(BLUETOOTH_SERVICE_STOPPED);
+        LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
     }
 
     public void startReading(BluetoothDevice device) {
@@ -164,11 +174,11 @@ public class BluetoothService extends Service {
         bluetoothDevice = device;
         createGATT(device);
 
-        if(credentials.username().get().equals("Demo")) {
+        if (credentials.username().get().equals("Demo")) {
             return;
         }
 
-        wolk = new Wolk(hexiwearDevice);
+        wolk = new Wolk(hexiwearDevice, BuildConfig.MQTT_HOST);
         wolk.setLogger(new Logger() {
             @Override
             public void info(final String message) {
@@ -232,6 +242,10 @@ public class BluetoothService extends Service {
                 switch (command) {
                     case WRITE_TIME:
                         Log.i(TAG, "Time written.");
+                        showToast(R.string.readings_time_set_success);
+                        final Intent intent = new Intent(HIDE_TIME_PROGRESS);
+                        sendBroadcast(intent);
+
                         final BluetoothGattCharacteristic batteryCharacteristic = readableCharacteristics.get(Characteristic.BATTERY.getUuid());
                         gatt.setCharacteristicNotification(batteryCharacteristic, true);
                         for (BluetoothGattDescriptor descriptor : batteryCharacteristic.getDescriptors()) {
@@ -290,6 +304,10 @@ public class BluetoothService extends Service {
                             }
                         } else {
                             onBluetoothDataReceived(characteristic, gattCharacteristic.getValue());
+                        }
+
+                        if (shouldUpdateTime) {
+                            updateTime();
                         }
 
                         if (notificationsQueue.isEmpty()) {
@@ -437,6 +455,7 @@ public class BluetoothService extends Service {
                 Log.d(TAG, "ALERT_IN DISCOVERED");
                 alertIn = gattCharacteristic;
                 setTime();
+                updateTime();
                 NotificationService_.intent(BluetoothService.this).start();
             } else if (characteristic != null) {
                 Log.v(TAG, characteristic.getType() + ": " + characteristic.name());
@@ -453,6 +472,12 @@ public class BluetoothService extends Service {
             Log.w(TAG, "Time not set.");
             return;
         }
+
+        shouldUpdateTime = true;
+    }
+
+    void updateTime() {
+        shouldUpdateTime = false;
 
         final byte[] time = new byte[20];
         final long currentTime = System.currentTimeMillis();
@@ -474,6 +499,14 @@ public class BluetoothService extends Service {
         alertIn.setValue(time);
         alertIn.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
         bluetoothGatt.writeCharacteristic(alertIn);
+        final Intent intent = new Intent(SHOW_TIME_PROGRESS);
+        sendBroadcast(intent);
+        showToast(R.string.readings_setting_time);
+    }
+
+    @UiThread
+    void showToast(int messageRes) {
+        Toast.makeText(getApplicationContext(), messageRes, Toast.LENGTH_SHORT).show();
     }
 
     public void setTracking(final boolean enabled) {

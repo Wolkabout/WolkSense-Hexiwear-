@@ -1,29 +1,27 @@
 /**
- *  Hexiwear application is used to pair with Hexiwear BLE devices
- *  and send sensor readings to WolkSense sensor data cloud
- *
- *  Copyright (C) 2016 WolkAbout Technology s.r.o.
- *
- *  Hexiwear is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  Hexiwear is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Hexiwear application is used to pair with Hexiwear BLE devices
+ * and send sensor readings to WolkSense sensor data cloud
+ * <p>
+ * Copyright (C) 2016 WolkAbout Technology s.r.o.
+ * <p>
+ * Hexiwear is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * <p>
+ * Hexiwear is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.wolkabout.hexiwear.view;
 
 import android.content.Context;
 import android.content.res.TypedArray;
-import android.graphics.Color;
 import android.support.design.widget.TextInputLayout;
 import android.support.v4.content.ContextCompat;
 import android.text.InputFilter;
@@ -36,6 +34,7 @@ import android.widget.TextView;
 
 import com.wolkabout.hexiwear.R;
 
+import org.androidannotations.annotations.AfterTextChange;
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EViewGroup;
 import org.androidannotations.annotations.UiThread;
@@ -75,7 +74,7 @@ public class Input extends TextInputLayout {
     void init() {
         setHint(hint);
         text.setCompoundDrawablesWithIntrinsicBounds(drawable, 0, 0, 0);
-        text.setFilters(new InputFilter[] {new InputFilter.LengthFilter(maxLength)});
+        text.setFilters(new InputFilter[]{new InputFilter.LengthFilter(maxLength)});
         text.setInputType(type.flag);
         text.setTextColor(textColor);
 
@@ -85,6 +84,7 @@ public class Input extends TextInputLayout {
 
         if (type == Type.PASSWORD) {
             text.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            setPasswordVisibilityToggleEnabled(true);
         }
 
         if (!TextUtils.isEmpty(actionLabel)) {
@@ -115,14 +115,31 @@ public class Input extends TextInputLayout {
 
     @UiThread
     public void setError(String error) {
-        text.setError(error);
+        setErrorEnabled(true);
+        super.setError(error);
         text.requestFocus();
     }
 
     @UiThread
     public void setError(int errorResource) {
-        text.setError(getContext().getString(errorResource));
+        setErrorEnabled(true);
+        super.setError(getContext().getString(errorResource));
         text.requestFocus();
+    }
+
+    @UiThread
+    public void clearError() {
+        if (!isErrorEnabled()) {
+            return;
+        }
+
+        setErrorEnabled(false);
+        super.setError(null);
+    }
+
+    @AfterTextChange(R.id.text)
+    void clearErrorOnTextChange() {
+        clearError();
     }
 
     public void setPasswordVisibility(boolean visible) {

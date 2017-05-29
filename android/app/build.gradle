@@ -2,15 +2,15 @@ apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.3'
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
 
     defaultConfig {
         applicationId "com.wolkabout.hexiwear"
         minSdkVersion 19
         targetSdkVersion 22
-        versionCode 28
-        versionName "1.28"
+        versionCode 29
+        versionName "1.29"
     }
     buildTypes {
         release {
@@ -18,6 +18,17 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    productFlavors {
+        staging {
+            buildConfigField 'String', 'MQTT_HOST', '"ssl://staging.wolksense.com:8883"'
+        }
+
+        production {
+            buildConfigField 'String', 'MQTT_HOST', '"ssl://wolksense.com:8883"'
+        }
+    }
+
     packagingOptions {
         exclude 'META-INF/DEPENDENCIES'
         exclude 'META-INF/NOTICE'
@@ -48,15 +59,17 @@ android {
                 signingConfig signingConfigs.release
             }
         }
+
+
     }
 }
 
-def SupportVersion = '23.4.0'
+def SupportVersion = '25.3.1'
 def AAVersion = '4.0.0'
-def ParcelerVersion = '1.0.4'
+def ParcelerVersion = '1.1.6'
+def RestAndroidVersion = '1.1.9'
 
 dependencies {
-
     // Android support libraries
     compile "com.android.support:appcompat-v7:$SupportVersion"
     compile "com.android.support:design:$SupportVersion"
@@ -71,9 +84,11 @@ dependencies {
     compile "org.parceler:parceler-api:$ParcelerVersion"
     apt "org.parceler:parceler:$ParcelerVersion"
 
+    stagingCompile "com.wolkabout:restandroid:${RestAndroidVersion}.STAGING"
+    productionCompile "com.wolkabout:restandroid:${RestAndroidVersion}.PRODUCTION"
 
-    compile 'com.wolkabout:restandroid:1.1.7.PRODUCTION'
-    compile 'com.wolkabout:wolk:1.0'
+    compile 'com.wolkabout:wolk:1.0.2'
+
     compile 'org.springframework.android:spring-android-rest-template:2.0.0.M3'
     compile 'com.fasterxml.jackson.core:jackson-databind:2.7.5'
 

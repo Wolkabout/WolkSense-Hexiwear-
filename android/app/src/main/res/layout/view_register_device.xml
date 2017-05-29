@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,7 +11,7 @@
         android:id="@+id/serialField"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:textAppearance="?android:attr/textAppearanceSmall"/>
 
     <com.wolkabout.hexiwear.view.Input_
         android:id="@+id/deviceName"
@@ -19,11 +20,11 @@
         android:layout_marginTop="16dp"
         app:hint="@string/activation_dialog_name_hint"
         app:text="@string/activation_dialog_default_name"
-        app:type="text" />
+        app:type="text"/>
 
     <ListView
         android:id="@+id/hexiwearDevices"
         android:layout_width="match_parent"
-        android:layout_height="200dp"/>
+        android:layout_height="match_parent"/>
 
 </LinearLayout>

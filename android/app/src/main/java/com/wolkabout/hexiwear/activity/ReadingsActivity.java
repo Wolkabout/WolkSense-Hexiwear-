@@ -1,28 +1,29 @@
 /**
- *  Hexiwear application is used to pair with Hexiwear BLE devices
- *  and send sensor readings to WolkSense sensor data cloud
- *
- *  Copyright (C) 2016 WolkAbout Technology s.r.o.
- *
- *  Hexiwear is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  Hexiwear is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Hexiwear application is used to pair with Hexiwear BLE devices
+ * and send sensor readings to WolkSense sensor data cloud
+ * <p>
+ * Copyright (C) 2016 WolkAbout Technology s.r.o.
+ * <p>
+ * Hexiwear is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * <p>
+ * Hexiwear is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.wolkabout.hexiwear.activity;
 
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothDevice;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
@@ -60,7 +61,7 @@ import org.androidannotations.annotations.Receiver;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.annotations.sharedpreferences.Pref;
 
-import java.util.List;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 @EActivity(R.layout.activity_readings)
@@ -129,10 +130,12 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
     @Bean
     Dialog dialog;
 
+    private ProgressDialog progressDialog;
     private HexiwearDevice hexiwearDevice;
     private BluetoothService bluetoothService;
     private boolean isBound;
     private Mode mode = Mode.IDLE;
+    private boolean shouldUnpair;
 
     @AfterInject
     void startService() {
@@ -153,6 +156,7 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
     @Override
     protected void onResume() {
         super.onResume();
+        shouldUnpair = false;
         invalidateOptionsMenu();
         setReadingVisibility(mode);
     }
@@ -167,6 +171,43 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
         }
 
         setReadingVisibility(mode);
+    }
+
+    @Receiver(actions = BluetoothService.BLUETOOTH_SERVICE_STOPPED, local = true)
+    void onBluetoothServiceDestroyed() {
+        if (!shouldUnpair) {
+            return;
+        }
+
+        try {
+            device.getClass().getMethod("removeBond", (Class[]) null).invoke(device, (Object[]) null);
+            dialog.shortToast(R.string.device_unpaired);
+            if (progressDialog != null) {
+                progressDialog.dismiss();
+            }
+            finish();
+        } catch (IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            e.printStackTrace();
+            dialog.shortToast(R.string.failed_to_unpair);
+        }
+    }
+
+    @Receiver(actions = BluetoothService.SHOW_TIME_PROGRESS, local = true)
+    void showProgressForSettingTime() {
+        if (progressBar == null) {
+            return;
+        }
+
+        progressBar.setVisibility(View.VISIBLE);
+    }
+
+    @Receiver(actions = BluetoothService.HIDE_TIME_PROGRESS, local = true)
+    void hideProgressForSettingTime() {
+        if (progressBar == null) {
+            return;
+        }
+
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     private void setReadingVisibility(final Mode mode) {
@@ -208,8 +249,8 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
 
     @Receiver(actions = BluetoothService.ACTION_NEEDS_BOND, local = true)
     void onBondRequested() {
-        connectionStatus.setText(R.string.discovery_bonding);
-        Snackbar.make(coordinator, R.string.discovery_bonding, Snackbar.LENGTH_LONG).show();
+        connectionStatus.setText(R.string.discovery_pairing);
+        Snackbar.make(coordinator, R.string.discovery_pairing, Snackbar.LENGTH_LONG).show();
     }
 
     @Receiver(actions = BluetoothService.CONNECTION_STATE_CHANGED, local = true)
@@ -316,6 +357,27 @@ public class ReadingsActivity extends AppCompatActivity implements ServiceConnec
         final boolean shouldTransmit = hexiwearDevices.shouldTransmit(device);
         bluetoothService.setTracking(shouldTransmit);
         supportInvalidateOptionsMenu();
+    }
+
+    @OptionsItem
+    void unpair() {
+        dialog.showConfirmation(0, R.string.unpair_message, R.string.yes, R.string.no, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int which) {
+                progressDialog = dialog.createProgressDialog(R.string.readings_unpairing);
+                progressDialog.show();
+                stopBluetoothServiceAndUnpair();
+            }
+        }, true);
+    }
+
+    private void stopBluetoothServiceAndUnpair() {
+        shouldUnpair = true;
+        if (isBound) {
+            unbindService(this);
+            isBound = false;
+        }
+        BluetoothService_.intent(this).stop();
     }
 
     @Override

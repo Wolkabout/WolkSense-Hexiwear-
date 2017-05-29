@@ -37,4 +37,10 @@
     <style name="Close" parent="Widget.AppCompat.ActionButton.CloseMode">
         <item name="android:tint">@color/grayish</item>
     </style>
+
+    <style name="DarkerErrorAppearance" parent="@android:style/TextAppearance">
+        <item name="android:textColor">@color/red_dark</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
 </resources>

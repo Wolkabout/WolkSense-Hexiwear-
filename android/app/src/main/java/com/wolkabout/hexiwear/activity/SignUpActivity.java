@@ -1,22 +1,21 @@
 /**
- *  Hexiwear application is used to pair with Hexiwear BLE devices
- *  and send sensor readings to WolkSense sensor data cloud
- *
- *  Copyright (C) 2016 WolkAbout Technology s.r.o.
- *
- *  Hexiwear is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  Hexiwear is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
+ * Hexiwear application is used to pair with Hexiwear BLE devices
+ * and send sensor readings to WolkSense sensor data cloud
+ * <p>
+ * Copyright (C) 2016 WolkAbout Technology s.r.o.
+ * <p>
+ * Hexiwear is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * <p>
+ * Hexiwear is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * <p>
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package com.wolkabout.hexiwear.activity;
@@ -45,6 +44,8 @@ import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.UiThread;
 import org.androidannotations.annotations.ViewById;
 import org.androidannotations.rest.spring.annotations.RestService;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpStatusCodeException;
 
 @EActivity(R.layout.activity_sign_up)
 public class SignUpActivity extends AppCompatActivity {
@@ -54,6 +55,9 @@ public class SignUpActivity extends AppCompatActivity {
 
     @ViewById
     Input passwordField;
+
+    @ViewById
+    Input confirmPasswordField;
 
     @ViewById
     Input firstNameField;
@@ -110,41 +114,47 @@ public class SignUpActivity extends AppCompatActivity {
         try {
             authenticationService.signUp(signUpDto);
             onSignUpSuccess();
+        } catch (HttpStatusCodeException e) {
+            if (e.getStatusCode() == HttpStatus.BAD_REQUEST && e.getResponseBodyAsString().contains("USER_EMAIL_IS_NOT_UNIQUE")) {
+                onSignUpError(R.string.registration_error_email_already_exists);
+                return;
+            }
+
+            onSignUpError(R.string.registration_failed);
         } catch (Exception e) {
-            onSignUpError();
+            onSignUpError(R.string.registration_failed);
+        } finally {
+            dismissSigningUpLabel();
         }
-        dismissSigningUpLabel();
     }
 
     @UiThread
     void dismissSigningUpLabel() {
+        if (signUpButton == null || signingUp == null) {
+            return;
+        }
+
         signUpButton.setEnabled(true);
         signingUp.setVisibility(View.GONE);
     }
 
     @UiThread
     void onSignUpSuccess() {
+        if (dialog == null) {
+            return;
+        }
+
         dialog.showInfo(R.string.registration_success, true);
     }
 
     @UiThread
-    void onSignUpError() {
-        Toast.makeText(this, R.string.registration_failed, Toast.LENGTH_LONG).show();
+    void onSignUpError(int messageRes) {
+        dialog.showWarning(messageRes);
     }
 
     private boolean validate() {
         if (emailField.isEmpty()) {
-            emailField.setError(R.string.registration_error_field_required);
-            return false;
-        }
-
-        if (passwordField.isEmpty()) {
-            passwordField.setError(R.string.registration_error_field_required);
-            return false;
-        }
-
-        if (passwordField.getValue().length() < 8) {
-            passwordField.setError(R.string.registration_error_invalid_password);
+            emailField.setError(R.string.registration_error_email_required);
             return false;
         }
 
@@ -153,13 +163,33 @@ public class SignUpActivity extends AppCompatActivity {
             return false;
         }
 
+        if (passwordField.isEmpty()) {
+            passwordField.setError(R.string.registration_error_password_required);
+            return false;
+        }
+
+        if (passwordField.getValue().length() < 8) {
+            passwordField.setError(R.string.registration_error_short_password);
+            return false;
+        }
+
+        if (confirmPasswordField.isEmpty()) {
+            confirmPasswordField.setError(R.string.registration_confirm_password_error);
+            return false;
+        }
+
+        if (!passwordField.getValue().equals(confirmPasswordField.getValue())) {
+            confirmPasswordField.setError(R.string.registration_password_mismatch_error);
+            return false;
+        }
+
         if (firstNameField.isEmpty()) {
-            firstNameField.setError(R.string.registration_error_field_required);
+            firstNameField.setError(R.string.registration_error_first_name_required);
             return false;
         }
 
         if (lastNameField.isEmpty()) {
-            lastNameField.setError(R.string.registration_error_field_required);
+            lastNameField.setError(R.string.registration_error_last_name_required);
             return false;
         }
 
