@@ -49,20 +49,20 @@ public struct Device {
         self.feeds = feeds
     }
     
-    static func parseDeviceJSON(deviceJson: [String:AnyObject]) -> Device? {
+    static func parseDeviceJSON(_ deviceJson: [String:AnyObject]) -> Device? {
         var device: Device?
         if let id = deviceJson["id"] as? Int,
-            name = deviceJson["name"] as? String,
-            deviceSerial = deviceJson["deviceSerial"] as? String,
-            activationTimestamp = deviceJson["activationTimestamp"] as? Double,
-            deviceState = deviceJson["deviceState"] as? String,
-            batteryState = deviceJson["batteryState"] as? Int,
-            heartbeat = deviceJson["heartbeat"] as? Int,
-            lastReportTimestamp = deviceJson["lastReportTimestamp"] as? Double,
-            owner = deviceJson["owner"] as? String {
-
-                device = Device(id: id, name: name, deviceSerial: deviceSerial, activationTimestamp: activationTimestamp / 1000.0, deviceState: deviceState, batteryState: batteryState, heartbeat: heartbeat, lastReportTimestamp: lastReportTimestamp / 1000.0, owner: owner, feeds: nil)
-                
+            let name = deviceJson["name"] as? String,
+            let deviceSerial = deviceJson["deviceSerial"] as? String,
+            let activationTimestamp = deviceJson["activationTimestamp"] as? Double,
+            let deviceState = deviceJson["deviceState"] as? String,
+            let batteryState = deviceJson["batteryState"] as? Int,
+            let heartbeat = deviceJson["heartbeat"] as? Int,
+            let lastReportTimestamp = deviceJson["lastReportTimestamp"] as? Double,
+            let owner = deviceJson["owner"] as? String {
+            
+            device = Device(id: id, name: name, deviceSerial: deviceSerial, activationTimestamp: activationTimestamp / 1000.0, deviceState: deviceState, batteryState: batteryState, heartbeat: heartbeat, lastReportTimestamp: lastReportTimestamp / 1000.0, owner: owner, feeds: nil)
+            
             // feeds
             if let feeds = deviceJson["feeds"] as? [[String:AnyObject]] {
                 var feedArray: [Feed] = []
@@ -76,19 +76,19 @@ public struct Device {
                 device!.feeds = feedArray
             }
         }
-
+        
         return device
     }
     
     func isHexiwear() -> Bool {
         guard deviceSerial.characters.count == 16 else { return false }
-
-        let range = deviceSerial.startIndex.advancedBy(4) ..< deviceSerial.startIndex.advancedBy(6)
+        
+        let range = deviceSerial.characters.index(deviceSerial.startIndex, offsetBy: 4) ..< deviceSerial.characters.index(deviceSerial.startIndex, offsetBy: 6)
         let substring = deviceSerial[range]
-
+        
         return substring == "HX"
     }
-
+    
 }
 
 extension Device: CustomStringConvertible {

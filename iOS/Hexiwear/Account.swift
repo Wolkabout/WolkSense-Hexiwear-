@@ -34,5 +34,5 @@ class Account {
         self.lastName = lastName
         self.email = email
         self.password = password
-    }    
+    }
 }

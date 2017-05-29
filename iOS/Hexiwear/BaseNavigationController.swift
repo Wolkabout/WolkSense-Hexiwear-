@@ -25,17 +25,17 @@ import UIKit
 
 class BaseNavigationController: UINavigationController {
     
-    override func viewDidLoad() {        
+    override func viewDidLoad() {
         super.viewDidLoad()
         let layer = self.navigationBar.layer
         self.navigationBar.barTintColor = wolkaboutBlueColor
-        self.navigationBar.tintColor = UIColor.whiteColor()
+        self.navigationBar.tintColor = UIColor.white
         layer.cornerRadius = 3.0
-        layer.shadowOffset = CGSizeMake(1.0, 2.0)
-        layer.shadowColor = UIColor.blackColor().CGColor
+        layer.shadowOffset = CGSize(width: 1.0, height: 2.0)
+        layer.shadowColor = UIColor.black.cgColor
         layer.shadowRadius = 3.0
         layer.shadowOpacity = 0.3
-        navigationBar.tintColor = UIColor.whiteColor()
-        navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.whiteColor()]
+        navigationBar.tintColor = UIColor.white
+        navigationBar.titleTextAttributes = [NSForegroundColorAttributeName: UIColor.white]
     }
 }

@@ -24,7 +24,7 @@
 import UIKit
 
 protocol ActivatedDeviceDelegate {
-    func didSelectAlreadyActivatedName(name: String, serial: String)
+    func didSelectAlreadyActivatedName(_ name: String, serial: String)
 }
 
 class ShowDevicesTableViewController: UITableViewController {
@@ -38,27 +38,27 @@ class ShowDevicesTableViewController: UITableViewController {
     }
     
     // MARK: - Table view data source
-    override func tableView(tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return selectableDevices.count
     }
     
-    override func tableView(tableView: UITableView, cellForRowAtIndexPath indexPath: NSIndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCellWithIdentifier("deviceCell", forIndexPath: indexPath)
+    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "deviceCell", for: indexPath)
         let device = selectableDevices[indexPath.row]
         cell.textLabel?.text = device.name
         cell.detailTextLabel?.text = device.deviceSerial
-        cell.accessoryType = .None
+        cell.accessoryType = .none
         
         return cell
     }
     
-    override func tableView(tableView: UITableView, didSelectRowAtIndexPath indexPath: NSIndexPath) {
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let device = selectableDevices[indexPath.row]
         activatedDeviceDelegate?.didSelectAlreadyActivatedName(device.name, serial: device.deviceSerial)
     }
     
-    override func tableView(tableView: UITableView, heightForRowAtIndexPath indexPath: NSIndexPath) -> CGFloat {
+    override func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         return 60.0
     }
-
+    
 }

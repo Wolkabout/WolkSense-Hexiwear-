@@ -27,50 +27,50 @@ import CoreLocation
 
 
 public enum Reason {
-    case InvalidRequest
-    case AccessTokenExpired
-    case Cancelled
-    case CouldNotParseResponse
-    case NoData
-    case NoSuccessStatusCode(statusCode: Int)
-    case Other(NSError)
+    case invalidRequest
+    case accessTokenExpired
+    case cancelled
+    case couldNotParseResponse
+    case noData
+    case noSuccessStatusCode(statusCode: Int, data: String?)
+    case other(NSError)
 }
 
-func defaultSimpleFailureHandler(failureReason: Reason) {
+func defaultSimpleFailureHandler(_ failureReason: Reason) {
     switch failureReason {
-    case .InvalidRequest:
+    case .invalidRequest:
         print("Invalid request")
-    case .AccessTokenExpired:
+    case .accessTokenExpired:
         print("Access token expired")
-    case .Cancelled:
+    case .cancelled:
         print("Request cancelled")
-    case .CouldNotParseResponse:
+    case .couldNotParseResponse:
         print("Could not parse JSON")
-    case .NoData:
+    case .noData:
         print("No data")
-    case .NoSuccessStatusCode(let statusCode):
+    case .noSuccessStatusCode(let statusCode):
         print("No success status code: \(statusCode)")
-    case .Other(let err):
+    case .other(let err):
         print("Other error \(err.description)")
     }
 }
 
-func setNetworkActivityIndicatorVisible(visible: Bool) {
-    dispatch_async(dispatch_get_main_queue()) {
-        UIApplication.sharedApplication().networkActivityIndicatorVisible = visible
+func setNetworkActivityIndicatorVisible(_ visible: Bool) {
+    DispatchQueue.main.async {
+        UIApplication.shared.isNetworkActivityIndicatorVisible = visible
     }
 }
 
-public class WebAPIConfiguration {
-    let session: NSURLSession
-    let refreshTokenTimeout: NSTimeInterval
+open class WebAPIConfiguration {
+    let session: URLSession
+    let refreshTokenTimeout: TimeInterval
     let pageSize: Int
     let isNetworkActivityIndicated: Bool
     let userCredentials: UserCredentials
     let wolkaboutURL = "https://api.wolksense.com/api"
     
-    init(session: NSURLSession = NSURLSession(configuration: NSURLSessionConfiguration.defaultSessionConfiguration()),
-         refreshTokenTimeout: NSTimeInterval = 20 * 60, // 20 minutes
+    init(session: URLSession = URLSession(configuration: URLSessionConfiguration.default),
+         refreshTokenTimeout: TimeInterval = 20 * 60, // 20 minutes
         pageSize: Int = 20,
         isNetworkActivityIndicated: Bool = true,
         userCredentials: UserCredentials = UserCredentials())
@@ -83,9 +83,9 @@ public class WebAPIConfiguration {
     }
 }
 
-public class WebAPI {
+open class WebAPI {
     
-    public static let sharedWebAPI = WebAPI()
+    open static let sharedWebAPI = WebAPI()
     
     var defaultFailureHandler: (Reason) -> () {
         get {
@@ -93,11 +93,11 @@ public class WebAPI {
         }
     }
     
-    private let HTTP_OK = 200
-    private let configuration: WebAPIConfiguration
+    fileprivate let HTTP_OK = 200
+    fileprivate let configuration: WebAPIConfiguration
     
-    private lazy var requestQueue: NSOperationQueue = {
-        var queue = NSOperationQueue()
+    fileprivate lazy var requestQueue: OperationQueue = {
+        var queue = OperationQueue()
         queue.name = "com.wolkabout.Hexiwear.webAPIQueue"
         queue.maxConcurrentOperationCount = 1 // 1 running request allowed
         return queue
@@ -120,27 +120,27 @@ public class WebAPI {
     //MARK: - Device management functions
     
     // GET ACTIVATION STATUS
-    func getDeviceActivationStatus(deviceSerialNumber: String, onFailure:(Reason) -> (), onSuccess: (activationStatus: String) -> ()) {
+    func getDeviceActivationStatus(_ deviceSerialNumber: String, onFailure: @escaping (Reason) -> (), onSuccess: @escaping  (_ activationStatus: String) -> ()) {
         
-        guard !deviceSerialNumber.isEmpty else { onFailure(.InvalidRequest); return }
+        guard !deviceSerialNumber.isEmpty else { onFailure(.invalidRequest); return }
         
         let requestURL = configuration.wolkaboutURL + "/v2/devices/\(deviceSerialNumber)/activation_status"
         
-        let onSuccessConverter = { [unowned self] (let responseData: NSData?) in
+        let onSuccessConverter = { [unowned self] (responseData: Data?) in
             
             // Response data can be deserialized to String
             guard let responseData = responseData,
-                dataString = NSString(data: responseData, encoding: NSUTF8StringEncoding) else {
-                    onFailure(.CouldNotParseResponse)
+                let dataString = NSString(data: responseData, encoding: String.Encoding.utf8.rawValue) else {
+                    onFailure(.couldNotParseResponse)
                     return
             }
             
-            var responseString: String = String(dataString).stringByReplacingOccurrencesOfString("\r", withString: "")
-            responseString = responseString.stringByReplacingOccurrencesOfString("\n", withString: "")
+            var responseString: String = String(dataString).replacingOccurrences(of: "\r", with: "")
+            responseString = responseString.replacingOccurrences(of: "\n", with: "")
             
             let status = self.getActivationStatusFromString(responseString)
-            status.isEmpty ? onFailure(.NoData)
-                : onSuccess(activationStatus: status)
+            status.isEmpty ? onFailure(.noData)
+                : onSuccess(status)
         }
         
         let getDeviceStatusOperation = WolkAboutWebRequest(webApi: self, requestURL: requestURL, queryString: nil, requestData: nil, method: "GET", sendAuthorisationToken: true, isResponseDataExpected: true, isNetworkActivityIndicated: configuration.isNetworkActivityIndicated, onFailure: onFailure, onSuccess: onSuccessConverter)
@@ -148,25 +148,25 @@ public class WebAPI {
     }
     
     //  GET RANDOM SERIAL
-    func getRandomSerial(onFailure:(Reason) -> (), onSuccess: (serial: String) -> ()) {
+    func getRandomSerial(_ onFailure: @escaping (Reason) -> (), onSuccess: @escaping  (_ serial: String) -> ()) {
         let requestURL = configuration.wolkaboutURL + "/v3/devices/random_serial"
         let queryString = "?type=HEXIWEAR"
         
-        let onSuccessConverter = { [unowned self] (let responseData: NSData?) in
+        let onSuccessConverter = { [unowned self] (responseData: Data?) in
             
             // Response data can be deserialized to String
             guard let responseData = responseData,
-                dataString = NSString(data: responseData, encoding: NSUTF8StringEncoding) else {
-                    onFailure(.CouldNotParseResponse)
+                let dataString = NSString(data: responseData, encoding: String.Encoding.utf8.rawValue) else {
+                    onFailure(.couldNotParseResponse)
                     return
             }
             
-            var responseString: String = String(dataString).stringByReplacingOccurrencesOfString("\r", withString: "")
-            responseString = responseString.stringByReplacingOccurrencesOfString("\n", withString: "")
+            var responseString: String = String(dataString).replacingOccurrences(of: "\r", with: "")
+            responseString = responseString.replacingOccurrences(of: "\n", with: "")
             
             let serialNumber = self.getSerialFromString(responseString)
-            serialNumber.isEmpty ? onFailure(.NoData)
-                : onSuccess(serial: serialNumber)
+            serialNumber.isEmpty ? onFailure(.noData)
+                : onSuccess(serialNumber)
         }
         
         let getRandomSerialOperation = WolkAboutWebRequest(webApi: self, requestURL: requestURL, queryString: queryString, requestData: nil, method: "GET", sendAuthorisationToken: true, isResponseDataExpected: true, isNetworkActivityIndicated: configuration.isNetworkActivityIndicated, onFailure: onFailure, onSuccess: onSuccessConverter)
@@ -174,36 +174,36 @@ public class WebAPI {
     }
     
     // ACTIVATE
-    func activateDevice(deviceSerialNumber: String, deviceName: String, onFailure:(Reason) -> (), onSuccess: (pointId: Int, password: String) -> ()) {
+    func activateDevice(_ deviceSerialNumber: String, deviceName: String, onFailure: @escaping (Reason) -> (), onSuccess: @escaping  (_ pointId: Int, _ password: String) -> ()) {
         
-        guard !deviceSerialNumber.isEmpty && !deviceName.isEmpty else { onFailure(.InvalidRequest); return }
+        guard !deviceSerialNumber.isEmpty && !deviceName.isEmpty else { onFailure(.invalidRequest); return }
         
         let requestURL = configuration.wolkaboutURL + "/v2/devices/\(deviceSerialNumber)"
         
-        let requestJson: [String:AnyObject] = ["name": deviceName]
-        guard let requestData = try? NSJSONSerialization.dataWithJSONObject(requestJson, options: NSJSONWritingOptions.PrettyPrinted) else {
-            onFailure(.InvalidRequest)
+        let requestJson: [String:AnyObject] = ["name": deviceName as AnyObject]
+        guard let requestData = try? JSONSerialization.data(withJSONObject: requestJson, options: JSONSerialization.WritingOptions.prettyPrinted) else {
+            onFailure(.invalidRequest)
             return
         }
         
-        let onSuccessConverter = { [unowned self] (let responseData: NSData?) in
+        let onSuccessConverter = { [unowned self] (responseData: Data?) in
             
             // Response data can be deserialized to String
             guard let responseData = responseData,
-                dataString = NSString(data: responseData, encoding: NSUTF8StringEncoding) else {
-                    onFailure(.CouldNotParseResponse)
+                let dataString = NSString(data: responseData, encoding: String.Encoding.utf8.rawValue) else {
+                    onFailure(.couldNotParseResponse)
                     return
             }
             
-            var responseString: String = String(dataString).stringByReplacingOccurrencesOfString("\r", withString: "")
-            responseString = responseString.stringByReplacingOccurrencesOfString("\n", withString: "")
+            var responseString: String = String(dataString).replacingOccurrences(of: "\r", with: "")
+            responseString = responseString.replacingOccurrences(of: "\n", with: "")
             
             if let pointNumber = self.getPointIdFromString(responseString) {
                 let password = self.getPasswordFromString(responseString)
-                onSuccess(pointId: pointNumber, password: password)
+                onSuccess(pointNumber, password)
             }
             else {
-                onFailure(.NoData)
+                onFailure(.noData)
             }
         }
         
@@ -213,12 +213,12 @@ public class WebAPI {
     
     
     // DEACTIVATE
-    func deactivateDevice(deviceSerialNumber: String, onFailure:(Reason) -> (), onSuccess: () -> ()) {
-        guard !deviceSerialNumber.isEmpty else { onFailure(.InvalidRequest); return }
+    func deactivateDevice(_ deviceSerialNumber: String, onFailure: @escaping (Reason) -> (), onSuccess: @escaping  () -> ()) {
+        guard !deviceSerialNumber.isEmpty else { onFailure(.invalidRequest); return }
         
         let requestURL = configuration.wolkaboutURL + "/v2/devices/\(deviceSerialNumber)"
         
-        let onSuccessConverter = { (_: NSData?) in onSuccess() }
+        let onSuccessConverter = { (_: Data?) in onSuccess() }
         
         let deactivateOperation = WolkAboutWebRequest(webApi: self, requestURL: requestURL, queryString: nil, requestData: nil, method: "DELETE", sendAuthorisationToken: true, isResponseDataExpected: false, isNetworkActivityIndicated: configuration.isNetworkActivityIndicated, onFailure: onFailure, onSuccess: onSuccessConverter)
         requestQueue.addOperation(deactivateOperation)
@@ -226,13 +226,13 @@ public class WebAPI {
     
     
     // FETCH POINTS
-    func fetchPoints(onFailure:(Reason) -> (), onSuccess: ([Device]) -> ()) {
+    func fetchPoints(_ onFailure: @escaping (Reason) -> (), onSuccess: @escaping  ([Device]) -> ()) {
         let requestURL = configuration.wolkaboutURL + "/v3/points"
         
-        let onSuccessConverter = { (let responseData: NSData?) in
+        let onSuccessConverter = { (responseData: Data?) in
             // Response data can be deserialized to JSON
-            guard let responseData = responseData, jsonArrayOfDict = try? NSJSONSerialization.JSONObjectWithData(responseData, options: []) as! [[String:AnyObject]] else {
-                onFailure(.CouldNotParseResponse)
+            guard let responseData = responseData, let jsonArrayOfDict = try? JSONSerialization.jsonObject(with: responseData, options: []) as! [[String:AnyObject]] else {
+                onFailure(.couldNotParseResponse)
                 return
             }
             
@@ -256,18 +256,18 @@ public class WebAPI {
     //MARK: - User account management functions
     
     // SIGN UP
-    func signUp(firstName: String, lastName: String, email: String, password: String, onFailure:(Reason) -> (), onSuccess: () -> ()) {
-        guard !firstName.isEmpty && !lastName.isEmpty && !email.isEmpty && !password.isEmpty else { onFailure(.InvalidRequest); return }
+    func signUp(_ firstName: String, lastName: String, email: String, password: String, onFailure: @escaping (Reason) -> (), onSuccess: @escaping  () -> ()) {
+        guard !firstName.isEmpty && !lastName.isEmpty && !email.isEmpty && !password.isEmpty else { onFailure(.invalidRequest); return }
         
         let requestURL = configuration.wolkaboutURL + "/v2/signUp"
-        let requestJson: [String:AnyObject] = ["firstName": firstName, "lastName": lastName, "email": email, "password": password]
+        let requestJson: [String:AnyObject] = ["firstName": firstName as AnyObject, "lastName": lastName as AnyObject, "email": email as AnyObject, "password": password as AnyObject]
         print(requestJson)
-        guard let requestData = try? NSJSONSerialization.dataWithJSONObject(requestJson, options: NSJSONWritingOptions.PrettyPrinted) else {
-            onFailure(.InvalidRequest)
+        guard let requestData = try? JSONSerialization.data(withJSONObject: requestJson, options: JSONSerialization.WritingOptions.prettyPrinted) else {
+            onFailure(.invalidRequest)
             return
         }
         
-        let onSuccessConverter = { (_: NSData?) in onSuccess() }
+        let onSuccessConverter = { (_: Data?) in onSuccess() }
         
         let signUpOperation = WolkAboutWebRequest(webApi: self, requestURL: requestURL, queryString: nil, requestData: requestData, method: "POST", sendAuthorisationToken: false, isResponseDataExpected: false, isNetworkActivityIndicated: configuration.isNetworkActivityIndicated, onFailure: onFailure, onSuccess: onSuccessConverter)
         requestQueue.addOperation(signUpOperation)
@@ -275,26 +275,26 @@ public class WebAPI {
     
     
     //SIGN IN
-    func signIn(username: String, password: String, onFailure:(Reason) -> (), onSuccess: () -> ()) {
-        guard !username.isEmpty && !password.isEmpty else { onFailure(.InvalidRequest); return }
+    func signIn(_ username: String, password: String, onFailure: @escaping (Reason) -> (), onSuccess: @escaping  () -> ()) {
+        guard !username.isEmpty && !password.isEmpty else { onFailure(.invalidRequest); return }
         
         let requestURL = configuration.wolkaboutURL + "/signIn"
-        let requestJson: [String:AnyObject] = ["email": username, "password": password]
-        guard let requestData = try? NSJSONSerialization.dataWithJSONObject(requestJson, options: NSJSONWritingOptions.PrettyPrinted) else {
-            onFailure(.InvalidRequest)
+        let requestJson: [String:AnyObject] = ["email": username as AnyObject, "password": password as AnyObject]
+        guard let requestData = try? JSONSerialization.data(withJSONObject: requestJson, options: JSONSerialization.WritingOptions.prettyPrinted) else {
+            onFailure(.invalidRequest)
             return
         }
         
         
-        let onSuccessConverter = { (let responseData: NSData?) in
+        let onSuccessConverter = { (responseData: Data?) in
             self.configuration.userCredentials.accessToken = ""
             // Response data can be deserialized to JSON
-            guard let responseData = responseData, credentials = try? NSJSONSerialization.JSONObjectWithData(responseData, options: []) as! [String:String] else {
-                onFailure(.CouldNotParseResponse)
+            guard let responseData = responseData, let credentials = try? JSONSerialization.jsonObject(with: responseData, options: []) as! [String:String] else {
+                onFailure(.couldNotParseResponse)
                 return
             }
             
-            self.configuration.userCredentials.storeCredentials(credentials)
+            self.configuration.userCredentials.storeCredentials(credentials as NSDictionary)
             onSuccess()
         }
         
@@ -303,36 +303,36 @@ public class WebAPI {
     }
     
     // RESET PASSWORD
-    func resetPassword(userEmail: String, onFailure:(Reason) -> (), onSuccess: () -> ()) {
-        guard !userEmail.isEmpty else { onFailure(.InvalidRequest); return }
+    func resetPassword(_ userEmail: String, onFailure: @escaping (Reason) -> (), onSuccess: @escaping  () -> ()) {
+        guard !userEmail.isEmpty else { onFailure(.invalidRequest); return }
         
         let requestURL = configuration.wolkaboutURL + "/reset-password"
-        let requestJson: [String:AnyObject] = ["email": userEmail]
-        guard let requestData = try? NSJSONSerialization.dataWithJSONObject(requestJson, options: NSJSONWritingOptions.PrettyPrinted) else {
-            onFailure(.InvalidRequest)
+        let requestJson: [String:AnyObject] = ["email": userEmail as AnyObject]
+        guard let requestData = try? JSONSerialization.data(withJSONObject: requestJson, options: JSONSerialization.WritingOptions.prettyPrinted) else {
+            onFailure(.invalidRequest)
             return
         }
         
         
-        let onSuccessConverter = { (_: NSData?) in onSuccess() }
+        let onSuccessConverter = { (_: Data?) in onSuccess() }
         
         let verifyOperation = WolkAboutWebRequest(webApi: self, requestURL: requestURL, queryString: nil, requestData: requestData, method: "POST", sendAuthorisationToken: false, isResponseDataExpected: false, isNetworkActivityIndicated: configuration.isNetworkActivityIndicated, onFailure: onFailure, onSuccess: onSuccessConverter)
         requestQueue.addOperation(verifyOperation)
     }
     
     // CHANGE PASSWORD
-    func changePassword(userEmail: String, oldPassword: String, newPassword: String, onFailure:(Reason) -> (), onSuccess: () -> ()) {
-        guard !oldPassword.isEmpty && !newPassword.isEmpty && !userEmail.isEmpty else { onFailure(.InvalidRequest); return }
+    func changePassword(oldPassword: String, newPassword: String, onFailure: @escaping (Reason) -> (), onSuccess: @escaping  () -> ()) {
+        guard !oldPassword.isEmpty && !newPassword.isEmpty else { onFailure(.invalidRequest); return }
         
-        let requestURL = configuration.wolkaboutURL + "/change-password"
-        let requestJson: [String:AnyObject] = ["email": userEmail, "oldPassword": oldPassword, "newPassword": newPassword]
-        guard let requestData = try? NSJSONSerialization.dataWithJSONObject(requestJson, options: NSJSONWritingOptions.PrettyPrinted) else {
-            onFailure(.InvalidRequest)
+        let requestURL = configuration.wolkaboutURL + "/v2/change-password"
+        let requestJson: [String:AnyObject] = ["oldPassword": oldPassword as AnyObject, "newPassword": newPassword as AnyObject]
+        guard let requestData = try? JSONSerialization.data(withJSONObject: requestJson, options: JSONSerialization.WritingOptions.prettyPrinted) else {
+            onFailure(.invalidRequest)
             return
         }
         
         
-        let onSuccessConverter = { (_: NSData?) in onSuccess() }
+        let onSuccessConverter = { (_: Data?) in onSuccess() }
         
         let verifyOperation = WolkAboutWebRequest(webApi: self, requestURL: requestURL, queryString: nil, requestData: requestData, method: "POST", sendAuthorisationToken: true, isResponseDataExpected: false, isNetworkActivityIndicated: configuration.isNetworkActivityIndicated, onFailure: onFailure, onSuccess: onSuccessConverter)
         requestQueue.addOperation(verifyOperation)
@@ -344,29 +344,29 @@ public class WebAPI {
 extension WebAPI {
     
     //MARK:- WolkAboutWebRequest
-    private class WolkAboutWebRequest: NSOperation {
-        private unowned let webApi: WebAPI
-        private let requestURL: String
-        private let queryString: String?
-        private let requestData: NSData?
-        private let method: String
-        private let sendAuthorisationToken: Bool
-        private let isResponseDataExpected: Bool
-        private let isNetworkActivityIndicated: Bool
-        private let failure: (Reason) -> ()
-        private let success: (NSData?) -> ()
+    fileprivate class WolkAboutWebRequest: Operation {
+        fileprivate unowned let webApi: WebAPI
+        fileprivate let requestURL: String
+        fileprivate let queryString: String?
+        fileprivate let requestData: Data?
+        fileprivate let method: String
+        fileprivate let sendAuthorisationToken: Bool
+        fileprivate let isResponseDataExpected: Bool
+        fileprivate let isNetworkActivityIndicated: Bool
+        fileprivate let failure: (Reason) -> ()
+        fileprivate let success: (Data?) -> ()
         
         // Request/response vars
-        private let requestURLPath: String
-        private var request: NSMutableURLRequest!
-        private var failureReason: Reason?
-        private var result: NSData?
+        fileprivate let requestURLPath: String
+        fileprivate var request: NSMutableURLRequest!
+        fileprivate var failureReason: Reason?
+        fileprivate var result: Data?
         
         // Async task management
-        private var responseSemaphore: NSCondition!
-        private var responseReceived = false
+        fileprivate var responseSemaphore: NSCondition!
+        fileprivate var responseReceived = false
         
-        init (webApi: WebAPI, requestURL: String, queryString: String?, requestData: NSData?, method: String, sendAuthorisationToken: Bool, isResponseDataExpected: Bool, isNetworkActivityIndicated: Bool, onFailure:(Reason) -> (), onSuccess: (NSData?) -> ()) {
+        init (webApi: WebAPI, requestURL: String, queryString: String?, requestData: Data?, method: String, sendAuthorisationToken: Bool, isResponseDataExpected: Bool, isNetworkActivityIndicated: Bool, onFailure: @escaping (Reason) -> (), onSuccess: @escaping (Data?) -> ()) {
             self.webApi = webApi
             self.requestURL = requestURL
             self.queryString = queryString
@@ -384,82 +384,96 @@ extension WebAPI {
         override func main() {
             
             // Bounce if cancelled
-            guard !cancelled else {
-                failure(Reason.Cancelled)
+            guard !isCancelled else {
+                failure(Reason.cancelled)
                 return
             }
             
             // Bounce if access token expired
             if sendAuthorisationToken {
                 guard webApi.checkAccessToken() else {
-                    failure(.AccessTokenExpired)
+                    failure(.accessTokenExpired)
                     return
                 }
             }
             
             // Bounce if cancelled
-            guard !cancelled else {
-                failure(Reason.Cancelled)
+            guard !isCancelled else {
+                failure(Reason.cancelled)
                 return
             }
             request = webApi.createWebAPIRequest(requestURLPath, method: method, jsonData: requestData, sendAuthorisationToken: sendAuthorisationToken)
             
             // Bounce if cancelled
-            guard !cancelled else {
-                failure(Reason.Cancelled)
+            guard !isCancelled else {
+                failure(Reason.cancelled)
                 return
             }
             responseSemaphore = NSCondition()
             
             if isNetworkActivityIndicated { setNetworkActivityIndicatorVisible(true) }
             
-            let task = webApi.configuration.session.dataTaskWithRequest(request) { data, response, error in
+            let task = webApi.configuration.session.dataTask(with: request as URLRequest, completionHandler: { data, response, error in
                 
                 // Bounce if cancelled
-                guard !self.cancelled else {
-                    self.failureReason = .Cancelled
+                guard !self.isCancelled else {
+                    self.failureReason = .cancelled
                     self.signalResponseReceived()
                     return
                 }
                 
                 // There is no error
                 guard error == nil else {
-                    self.failureReason = .Other(error!)
+                    self.failureReason = .other(error! as NSError)
                     self.signalResponseReceived()
                     return
                 }
                 
                 // Bounce if cancelled
-                guard !self.cancelled else {
-                    self.failureReason = .Cancelled
+                guard !self.isCancelled else {
+                    self.failureReason = .cancelled
                     self.signalResponseReceived()
                     return
                 }
                 
                 // Response is valid
-                guard let httpResponse = response as? NSHTTPURLResponse else {
-                    self.failureReason = .NoData
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    self.failureReason = .noData
                     self.signalResponseReceived()
                     return
                 }
                 
                 // Bounce if cancelled
-                guard !self.cancelled else {
-                    self.failureReason = .Cancelled
+                guard !self.isCancelled else {
+                    self.failureReason = .cancelled
                     self.signalResponseReceived()
                     return
                 }
                 
                 // Response status code is successful
                 guard httpResponse.statusCode == self.webApi.HTTP_OK else {
-                    self.failureReason = .NoSuccessStatusCode(statusCode: httpResponse.statusCode)
+                    // Sign up - duplicated email
+                    // { "code": "USER_EMAIL_IS_NOT_UNIQUE", "message": "Data constraint error occurred with code" }
+                    
+                    // Sign in - wrong credentials
+                    // { "code": "CREDENTIALS_ARE_INVALID", "message": "Unauthorized error occurred with code" }
+                    
+                    
+                    print("!!!! HTTP status code = \(httpResponse.statusCode) for request \(self.method) \(self.requestURL)\(self.queryString ?? "")")
+                    
+                    var dataString: String? = nil
+                    if let data = data {
+                        dataString = String(data: data, encoding: .utf8)
+                        print(dataString ?? "no data")
+                    }
+                    self.failureReason = .noSuccessStatusCode(statusCode: httpResponse.statusCode, data: dataString)
                     self.signalResponseReceived()
                     return
                 }
                 
                 // Bounce if cancelled
-                guard !self.cancelled else {
-                    self.failureReason = .Cancelled
+                guard !self.isCancelled else {
+                    self.failureReason = .cancelled
                     self.signalResponseReceived()
                     return
                 }
@@ -473,22 +487,22 @@ extension WebAPI {
                 }
                 
                 // Bounce if cancelled
-                guard !self.cancelled else {
-                    self.failureReason = .Cancelled
+                guard !self.isCancelled else {
+                    self.failureReason = .cancelled
                     self.signalResponseReceived()
                     return
                 }
                 
                 // There is response data
                 guard let responseData = data else {
-                    self.failureReason = .NoData
+                    self.failureReason = .noData
                     self.signalResponseReceived()
                     return
                 }
                 
                 // Bounce if cancelled
-                guard !self.cancelled else {
-                    self.failureReason = .Cancelled
+                guard !self.isCancelled else {
+                    self.failureReason = .cancelled
                     self.signalResponseReceived()
                     return
                 }
@@ -497,7 +511,7 @@ extension WebAPI {
                 self.result = responseData
                 self.signalResponseReceived()
                 
-            }
+            })
             task.resume()
             
             // wait for async data task to end
@@ -518,7 +532,7 @@ extension WebAPI {
             }
         }
         
-        private func signalResponseReceived() {
+        fileprivate func signalResponseReceived() {
             // signal that data task is done
             responseSemaphore.lock()
             responseReceived = true
@@ -528,38 +542,38 @@ extension WebAPI {
     }
     
     // Create REQUEST
-    private func createWebAPIRequest(requestURLPath: String, method: String = "GET", jsonData: NSData? = nil, sendAuthorisationToken: Bool = true) -> NSMutableURLRequest {
-        let requestURLPathEscaped = requestURLPath.stringByAddingPercentEncodingWithAllowedCharacters(NSCharacterSet.URLQueryAllowedCharacterSet())
+    fileprivate func createWebAPIRequest(_ requestURLPath: String, method: String = "GET", jsonData: Data? = nil, sendAuthorisationToken: Bool = true) -> NSMutableURLRequest {
+        let requestURLPathEscaped = requestURLPath.addingPercentEncoding(withAllowedCharacters: CharacterSet.urlQueryAllowed)
         
-        let requestURL: NSURL = NSURL(string: requestURLPathEscaped!)!
-        let request = NSMutableURLRequest(URL: requestURL)
-        request.HTTPMethod = method
+        let requestURL: URL = URL(string: requestURLPathEscaped!)!
+        let request = NSMutableURLRequest(url: requestURL)
+        request.httpMethod = method
         
         if let data = jsonData {
-            let postDataLengthString = "\(data.length)"
+            let postDataLengthString = "\(data.count)"
             request.setValue(postDataLengthString, forHTTPHeaderField: "Content-Length")
-            request.HTTPBody = data
+            request.httpBody = data
             request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
         
-        if let accessToken = configuration.userCredentials.accessToken where sendAuthorisationToken {
+        if let accessToken = configuration.userCredentials.accessToken, sendAuthorisationToken {
             request.setValue(accessToken, forHTTPHeaderField: "Authorization")
         }
         
-        request.cachePolicy = NSURLRequestCachePolicy.ReloadIgnoringLocalCacheData
+        request.cachePolicy = NSURLRequest.CachePolicy.reloadIgnoringLocalCacheData
         print(request)
         return request
     }
     
-    private func makeQueryString(dict: [String:String]) -> String {
+    fileprivate func makeQueryString(_ dict: [String:String]) -> String {
         var keyValuePairs = ""
         for (k, v) in dict {
             keyValuePairs += "\(k)=\(v)&"
         }
-        return keyValuePairs == "" ? "" : "?\(keyValuePairs[keyValuePairs.startIndex..<keyValuePairs.endIndex.predecessor()])"
+        return keyValuePairs == "" ? "" : "?\(keyValuePairs[keyValuePairs.startIndex..<keyValuePairs.characters.index(before: keyValuePairs.endIndex)])"
     }
     
-    private func checkAccessToken() -> Bool {
+    fileprivate func checkAccessToken() -> Bool {
         
         if !(configuration.userCredentials.accessTokenExpires != nil && configuration.userCredentials.accessTokenExpires!.timeIntervalSinceNow < configuration.refreshTokenTimeout) {
             return true
@@ -571,17 +585,17 @@ extension WebAPI {
         
         if configuration.userCredentials.accessTokenExpires != nil && configuration.userCredentials.accessTokenExpires!.timeIntervalSinceNow < configuration.refreshTokenTimeout {
             let content = String("{\"refreshToken\":\"\(configuration.userCredentials.refreshToken!)\"}");
-            guard let jsonData = content.dataUsingEncoding(NSUTF8StringEncoding) else {
+            guard let jsonData = content?.data(using: String.Encoding.utf8) else {
                 configuration.userCredentials.clearCredentials()
                 return false
             }
             
             if configuration.isNetworkActivityIndicated { setNetworkActivityIndicatorVisible(true) }
             
-            let refreshRequest = createWebAPIRequest(configuration.wolkaboutURL + "/refreshToken", jsonData: jsonData, method: "POST")
-            configuration.session.dataTaskWithRequest(refreshRequest) { [unowned self] (let data, let response, let error) in
+            let refreshRequest = createWebAPIRequest(configuration.wolkaboutURL + "/refreshToken", method: "POST", jsonData: jsonData)
+            configuration.session.dataTask(with: refreshRequest as URLRequest, completionHandler: { [unowned self] (data, response, error) in
                 // Response is valid
-                guard let httpResponse = response as? NSHTTPURLResponse else {
+                guard let httpResponse = response as? HTTPURLResponse else {
                     self.configuration.userCredentials.clearCredentials()
                     
                     // signal that data task is done
@@ -616,7 +630,7 @@ extension WebAPI {
                     return
                 }
                 
-                guard let credentials = try? NSJSONSerialization.JSONObjectWithData(responseData, options: [.MutableContainers]) as! [String:String] else {
+                guard let credentials = try? JSONSerialization.jsonObject(with: responseData, options: [.mutableContainers]) as! [String:String] else {
                     self.configuration.userCredentials.clearCredentials()
                     
                     // signal that data task is done
@@ -628,7 +642,7 @@ extension WebAPI {
                 }
                 
                 
-                self.configuration.userCredentials.storeCredentials(credentials)
+                self.configuration.userCredentials.storeCredentials(credentials as NSDictionary)
                 accessTokenOk = true
                 
                 // signal that data task is done
@@ -637,7 +651,7 @@ extension WebAPI {
                 responseSemaphore.signal()
                 responseSemaphore.unlock()
                 
-                }.resume()
+            }) .resume()
             
             // wait for async data task to end
             responseSemaphore.lock()
@@ -652,27 +666,27 @@ extension WebAPI {
         return accessTokenOk
     }
     
-    private func getActivationStatusFromString(jsonString: String) -> String {
+    fileprivate func getActivationStatusFromString(_ jsonString: String) -> String {
         return getStringFromJSON(jsonString, key: "activationStatus")
     }
     
-    private func getSerialFromString(jsonString: String) -> String {
+    fileprivate func getSerialFromString(_ jsonString: String) -> String {
         return getStringFromJSON(jsonString, key: "serial")
     }
     
-    private func getPointIdFromString(jsonString: String) -> Int? {
+    fileprivate func getPointIdFromString(_ jsonString: String) -> Int? {
         return getIntFromJSON(jsonString, key: "pointId")
     }
     
-    private func getPasswordFromString(jsonString: String) -> String {
+    fileprivate func getPasswordFromString(_ jsonString: String) -> String {
         return getStringFromJSON(jsonString, key: "password")
     }
     
-    private func getStringFromJSON(jsonString: String, key: String) -> String {
+    fileprivate func getStringFromJSON(_ jsonString: String, key: String) -> String {
         do {
-            if let data = jsonString.dataUsingEncoding(NSUTF8StringEncoding),
-                authenticationResponse = try NSJSONSerialization.JSONObjectWithData(data, options: [.MutableContainers]) as? NSDictionary,
-                stringValue = authenticationResponse[key] as? String
+            if let data = jsonString.data(using: String.Encoding.utf8),
+                let authenticationResponse = try JSONSerialization.jsonObject(with: data, options: [.mutableContainers]) as? NSDictionary,
+                let stringValue = authenticationResponse[key] as? String
             {
                 return stringValue
             }
@@ -684,11 +698,11 @@ extension WebAPI {
         return ""
     }
     
-    private func getIntFromJSON(jsonString: String, key: String) -> Int? {
+    fileprivate func getIntFromJSON(_ jsonString: String, key: String) -> Int? {
         do {
-            if let data = jsonString.dataUsingEncoding(NSUTF8StringEncoding),
-                authenticationResponse = try NSJSONSerialization.JSONObjectWithData(data, options: [.MutableContainers]) as? NSDictionary,
-                intValue = authenticationResponse[key] as? Int
+            if let data = jsonString.data(using: String.Encoding.utf8),
+                let authenticationResponse = try JSONSerialization.jsonObject(with: data, options: [.mutableContainers]) as? NSDictionary,
+                let intValue = authenticationResponse[key] as? Int
             {
                 return intValue
             }

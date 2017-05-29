@@ -24,17 +24,17 @@
 import UIKit
 
 class WeatherTableViewCell: UITableViewCell {
-
-    @IBOutlet private weak var topLabel: UILabel!
-    @IBOutlet private weak var middleLabel: UILabel!
-    @IBOutlet private weak var bottomLabel: UILabel!
+    
+    @IBOutlet fileprivate weak var topLabel: UILabel!
+    @IBOutlet fileprivate weak var middleLabel: UILabel!
+    @IBOutlet fileprivate weak var bottomLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
     }
-
-    override func setSelected(selected: Bool, animated: Bool) {
+    
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
     }
     
@@ -46,7 +46,7 @@ class WeatherTableViewCell: UITableViewCell {
             topLabel.text = newText
         }
     }
-
+    
     var middleText: String {
         get {
             return middleLabel.text!
@@ -55,7 +55,7 @@ class WeatherTableViewCell: UITableViewCell {
             middleLabel.text = newText
         }
     }
-
+    
     var bottomText: String {
         get {
             return bottomLabel.text!

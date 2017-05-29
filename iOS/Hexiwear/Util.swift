@@ -29,6 +29,7 @@ import MapKit
 let signUpURL = "https://wolksense.com"
 let privacyPolicyURL = "https://wolksense.com/documents/privacypolicy.html"
 let termsAndConditionsURL = "https://wolksense.com/documents/termsofservice.html"
+let BAD_REQUEST = 400
 let NOT_AUTHORIZED = 401
 let FORBIDDEN = 403
 let NOT_FOUND = 404
@@ -53,7 +54,7 @@ extension UIViewController {
         for view in self.view.subviews
         {
             // Key property which most of us are unaware of / rarely use.
-            if let subViewController = view.nextResponder() {
+            if let subViewController = view.next {
                 if subViewController is UIViewController {
                     let viewController = subViewController as! UIViewController
                     return viewController.topMostViewController()
@@ -80,11 +81,11 @@ extension UINavigationController {
 
 // Global misc functions
 
-func isValidEmailAddress(email: String) -> Bool {
+func isValidEmailAddress(_ email: String) -> Bool {
     let regExPattern = "[A-Z0-9a-z\\._%+-]+@([A-Za-z0-9-]+\\.)+[A-Za-z]{2,4}"
     do {
-        let regEx = try NSRegularExpression(pattern: regExPattern, options: .CaseInsensitive)
-        let regExMatches = regEx.numberOfMatchesInString(email, options: [], range: NSMakeRange(0, email.characters.count))
+        let regEx = try NSRegularExpression(pattern: regExPattern, options: .caseInsensitive)
+        let regExMatches = regEx.numberOfMatches(in: email, options: [], range: NSMakeRange(0, email.characters.count))
         return regExMatches == 0 ? false : true
     }
     catch {
@@ -94,41 +95,37 @@ func isValidEmailAddress(email: String) -> Bool {
 
 func getPrivateDocumentsDirectory() -> String? {
     
-    let paths = NSSearchPathForDirectoriesInDomains(.DocumentDirectory, .UserDomainMask, true)
+    let paths = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)
     if paths.count == 0 { print("No private directory"); return nil }
     var documentsDirectory = paths[0]
-    documentsDirectory = (documentsDirectory as NSString).stringByAppendingPathComponent("Private Documents")
-    if let _ = try? NSFileManager.defaultManager().createDirectoryAtPath(documentsDirectory, withIntermediateDirectories: true, attributes: nil) {
+    documentsDirectory = (documentsDirectory as NSString).appendingPathComponent("Private Documents")
+    if let _ = try? FileManager.default.createDirectory(atPath: documentsDirectory, withIntermediateDirectories: true, attributes: nil) {
         return documentsDirectory
     }
     return nil
 }
 
-func delay(delay:Double, closure:()->()) {
-    dispatch_after(
-        dispatch_time(
-            DISPATCH_TIME_NOW,
-            Int64(delay * Double(NSEC_PER_SEC))
-        ),
-        dispatch_get_main_queue(), closure)
+func delay(_ delay:Double, closure:@escaping ()->()) {
+    DispatchQueue.main.asyncAfter(
+        deadline: DispatchTime.now() + Double(Int64(delay * Double(NSEC_PER_SEC))) / Double(NSEC_PER_SEC), execute: closure)
 }
 
-func showSimpleAlertWithTitle(title: String!, message: String, viewController: UIViewController, OKhandler: ((UIAlertAction!) -> Void)? = nil) {
-    dispatch_async(dispatch_get_main_queue()) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .Alert)
-        let action = UIAlertAction(title: "OK", style: .Cancel, handler: OKhandler)
+func showSimpleAlertWithTitle(_ title: String!, message: String, viewController: UIViewController, OKhandler: ((UIAlertAction?) -> Void)? = nil) {
+    DispatchQueue.main.async {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let action = UIAlertAction(title: "OK", style: .cancel, handler: OKhandler)
         alert.addAction(action)
-        viewController.presentViewController(alert, animated: true, completion: nil)
+        viewController.present(alert, animated: true, completion: nil)
     }
 }
 
-func showOKAndCancelAlertWithTitle(title: String!, message: String, viewController: UIViewController, OKhandler: ((UIAlertAction!) -> Void)? = nil) {
-    dispatch_async(dispatch_get_main_queue()) {
-        let alert = UIAlertController(title: title, message: message, preferredStyle: .Alert)
-        let OKaction = UIAlertAction(title: "OK", style: .Default, handler: OKhandler)
+func showOKAndCancelAlertWithTitle(_ title: String!, message: String, viewController: UIViewController, OKhandler: ((UIAlertAction?) -> Void)? = nil) {
+    DispatchQueue.main.async {
+        let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+        let OKaction = UIAlertAction(title: "OK", style: .default, handler: OKhandler)
         alert.addAction(OKaction)
-        let CancelAction = UIAlertAction(title: "Cancel", style: .Cancel, handler: nil)
+        let CancelAction = UIAlertAction(title: "Cancel", style: .cancel, handler: nil)
         alert.addAction(CancelAction)
-        viewController.presentViewController(alert, animated: true, completion: nil)
+        viewController.present(alert, animated: true, completion: nil)
     }
 }

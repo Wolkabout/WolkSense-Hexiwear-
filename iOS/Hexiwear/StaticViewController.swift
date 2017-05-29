@@ -28,18 +28,18 @@ protocol StaticViewDelegate {
 }
 
 class StaticViewController: UIViewController {
-
+    
     var staticDelegate: StaticViewDelegate?
-        
+    
     @IBOutlet weak var webView: UIWebView!
-    var url: NSURL!
-
-    override func viewWillAppear(animated: Bool) {
-        webView.loadRequest(NSURLRequest(URL: url))
+    var url: URL!
+    
+    override func viewWillAppear(_ animated: Bool) {
+        webView.loadRequest(URLRequest(url: url))
     }
     
-    @IBAction func closeAction(sender: AnyObject) {
+    @IBAction func closeAction(_ sender: AnyObject) {
         staticDelegate?.willClose()
     }
-
+    
 }

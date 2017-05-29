@@ -24,17 +24,17 @@
 import UIKit
 
 class AcceleratorTableViewCell: UITableViewCell {
-
-    @IBOutlet private weak var xLabel: UILabel!
-    @IBOutlet private weak var yLabel: UILabel!
-    @IBOutlet private weak var zLabel: UILabel!
+    
+    @IBOutlet fileprivate weak var xLabel: UILabel!
+    @IBOutlet fileprivate weak var yLabel: UILabel!
+    @IBOutlet fileprivate weak var zLabel: UILabel!
     
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
     }
     
-    override func setSelected(selected: Bool, animated: Bool) {
+    override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
     }
     
@@ -64,5 +64,5 @@ class AcceleratorTableViewCell: UITableViewCell {
             zLabel.text = newZ
         }
     }
-
+    
 }

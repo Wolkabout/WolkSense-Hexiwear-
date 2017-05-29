@@ -24,7 +24,7 @@
 import UIKit
 
 class ChangePasswordTableViewController: UITableViewController {
-
+    
     @IBOutlet weak var oldPassword: UITextField!
     @IBOutlet weak var newPassword: UITextField!
     @IBOutlet weak var confirmNewPassword: UITextField!
@@ -32,8 +32,7 @@ class ChangePasswordTableViewController: UITableViewController {
     @IBOutlet weak var activityIndicator: UIActivityIndicatorView!
     
     var dataStore: DataStore!
-    var userEmail: String = ""
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         oldPassword.delegate = self
@@ -42,35 +41,35 @@ class ChangePasswordTableViewController: UITableViewController {
         title = "Change password"
     }
     
-    override func viewDidAppear(animated: Bool) {
-        if isMovingToParentViewController() {
+    override func viewDidAppear(_ animated: Bool) {
+        if isMovingToParentViewController {
             oldPassword.becomeFirstResponder()
         }
     }
-
-    @IBAction func closeAction(sender: AnyObject) {
-        dismissViewControllerAnimated(true, completion: nil)
+    
+    @IBAction func closeAction(_ sender: AnyObject) {
+        dismiss(animated: true, completion: nil)
     }
     
-    private func hideButtons() {
-        buttons.hidden = true
+    fileprivate func hideButtons() {
+        buttons.isHidden = true
         activityIndicator.startAnimating()
     }
     
-    private func showButtons() {
-        buttons.hidden = false
+    fileprivate func showButtons() {
+        buttons.isHidden = false
         activityIndicator.stopAnimating()
     }
-
+    
     func checkAllFieldsSet() -> Bool {
-        guard let oldPass = oldPassword.text, newPass = newPassword.text, conf = confirmNewPassword.text else {
+        guard let oldPass = oldPassword.text, let newPass = newPassword.text, let conf = confirmNewPassword.text else {
             return false
         }
         return !oldPass.isEmpty && !newPass.isEmpty && !conf.isEmpty
-
+        
     }
     
-    @IBAction func changeAction(sender: AnyObject) {
+    @IBAction func changeAction(_ sender: AnyObject) {
         hideButtons()
         
         if !checkAllFieldsSet() {
@@ -79,6 +78,11 @@ class ChangePasswordTableViewController: UITableViewController {
             return
         }
         
+        guard let pass = newPassword.text, let conf = confirmNewPassword.text, (pass.characters.count >= 8) && (conf.characters.count >= 8)  else {
+            showSimpleAlertWithTitle(applicationTitle, message: "Password must be at least 8 characters long!", viewController: self)
+            showButtons()
+            return
+        }
         
         let passwordsMatch = newPassword.text == confirmNewPassword.text
         if !passwordsMatch {
@@ -87,27 +91,41 @@ class ChangePasswordTableViewController: UITableViewController {
             return
         }
         
-        dataStore.changePasswordForUserEmail(userEmail, oldPassword: oldPassword.text ?? "", newPassword: newPassword.text ?? "",
-            onFailure:{ _ in
-                dispatch_async(dispatch_get_main_queue()) {
-                    showSimpleAlertWithTitle(applicationTitle, message: "Error changing password!", viewController: self)
+        dataStore.changePasswordForUserEmail(oldPassword: oldPassword.text ?? "", newPassword: newPassword.text ?? "",
+                                             onFailure: handleChangePasswordFail(reason:),
+                                             onSuccess: {
+                                                DispatchQueue.main.async {
+                                                    showSimpleAlertWithTitle(applicationTitle, message: "Password has been changed!", viewController: self, OKhandler: { _ in
+                                                        self.dismiss(animated: true, completion: nil) })
+                                                }
+        }
+        )
+    }
+    
+    func handleChangePasswordFail(reason: Reason) {
+        switch reason {
+        case .noSuccessStatusCode(let statusCode, _):
+            guard statusCode != BAD_REQUEST && statusCode != NOT_AUTHORIZED else {
+                DispatchQueue.main.async {
+                    showSimpleAlertWithTitle(applicationTitle, message: "Please enter a valid old password and try again.", viewController: self)
                     self.showButtons()
                 }
-            },
-            onSuccess: {
-                dispatch_async(dispatch_get_main_queue()) {
-                    showSimpleAlertWithTitle(applicationTitle, message: "Password has been changed!", viewController: self, OKhandler: { _ in
-                        self.dismissViewControllerAnimated(true, completion: nil) })
-                }
+                return
             }
-        )
-        
+            
+            fallthrough
+        default:
+            DispatchQueue.main.async {
+                showSimpleAlertWithTitle(applicationTitle, message: "There was a problem changing your password. Please try again or contact our support.", viewController: self)
+                self.showButtons()
+            }
+        }
     }
     
 }
 
 extension ChangePasswordTableViewController: UITextFieldDelegate {
-    func textFieldShouldReturn(textField: UITextField) -> Bool {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         if textField == oldPassword {
             newPassword.becomeFirstResponder()
             return true
