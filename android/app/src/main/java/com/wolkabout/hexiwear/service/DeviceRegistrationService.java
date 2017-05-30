@@ -102,7 +102,7 @@ public class DeviceRegistrationService {
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setView(view);
-        builder.setMessage(R.string.activation_dialog_title);
+        builder.setTitle(R.string.activation_dialog_title);
         builder.setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
                 //dialog.cancel();
